@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
+import datetime
+from dotenv import load_dotenv
+import dj_database_url
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,12 +30,30 @@ SECRET_KEY = 'django-insecure-7$^!!2yj95u!8l4-l#_*x=jda&g2$qs*ymaovjv6v$kaeus6n5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.channels': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
+
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,6 +64,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'accounts',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -73,6 +97,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
 
 #Customuser
 AUTH_USER_MODEL = 'accounts.User'
@@ -82,13 +107,38 @@ AUTHENTICATION_BACKENDS = ['accounts.auth_backends.EmailBackend']
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
+'''DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+}'''
+DATABASES = {
+    'default': dj_database_url.config(default='postgres://uivvdumiohjcfh:bb8fee2ffea9183569d7338b20726d75b22d9c5a4bbde32811cfff7ff6c2643d@ec2-34-202-53-101.compute-1.amazonaws.com:5432/d3fnc24idd8345')
 }
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+       'CONFIG': {
+            'hosts': [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+            
+        },
+    },
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
+    'USER_ID_CLAIM': 'id',
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -128,8 +178,18 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 STATIC_URL = 'static/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+MEDIA_URL = 'https://herrand-backend-5a39ee15054e.herokuapp.com/media/'
+
+#MEDIA_ROOT = Path(BASE_DIR / 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = ['https://herrand-backend-5a39ee15054e.herokuapp.com']
+
+

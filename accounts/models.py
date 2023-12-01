@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractUser,  Group, Permission
 #from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
+from django_countries.fields import CountryField
 
 
 
@@ -14,7 +15,7 @@ class CustomUserManager(BaseUserManager):
     for authentication instead of usernames.
     """
 
-    def create_user(self, email, password, user_type, **extra_fields):
+    def create_user(self, email, user_type, **extra_fields):
         """
         Create and save a User with the given email and password.
         """
@@ -23,7 +24,7 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         extra_fields.setdefault('user_type', user_type)
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)
+        #user.set_password(password)
         if user_type == 'Agent':
             user.is_agent = True
         elif user_type == 'Customer':
@@ -32,6 +33,19 @@ class CustomUserManager(BaseUserManager):
         user.save()
         return user
 
+        '''def create_superuser(self, email, password, **extra_fields):
+        """
+        Create and save a SuperUser with the given email and password.
+        """
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError(_('Superuser must have is_staff=True.'))
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError(_('Superuser must have is_superuser=True.'))
+        return self.create_user(email, password, phone_number="+2348055343594", **extra_fields)'''
     def create_superuser(self, email, password, **extra_fields):
         """
         Create and save a SuperUser with the given email and password.
@@ -44,7 +58,7 @@ class CustomUserManager(BaseUserManager):
             raise ValueError(_('Superuser must have is_staff=True.'))
         if extra_fields.get('is_superuser') is not True:
             raise ValueError(_('Superuser must have is_superuser=True.'))
-        return self.create_user(email, password, user_type="Customer", **extra_fields)
+        return self.create_user(email, password,phone_number="+2348055343591", **extra_fields)
 
 USER_TYPE = (('Agent', 'Agent'), ('Customer', 'Customer'))
 class User(AbstractUser):
@@ -54,10 +68,13 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     phone_number = PhoneNumberField(unique=True)
+    current_lat = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
+    current_long = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
     is_agent = models.BooleanField(default=False)
     is_customer = models.BooleanField(default=False)
     user_type = models.CharField(max_length=20, choices=USER_TYPE)
     otp = models.CharField(max_length=6, null=True, blank=True)
+    account_completed = models.BooleanField(default=False)
 
 
     USERNAME_FIELD = 'email'
@@ -80,8 +97,55 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
 
+
+
+class Preferences(models.Model):
+    title = models.CharField(max_length=100)
+
+    def __str__(self):
+        return str(self.title)
+
+class Services(models.Model):
+    title = models.CharField(max_length=100)
+
+    def __str__(self):
+        return str(self.title)
+
+class Idtype(models.Model):
+    title = models.CharField(max_length=100)
+
+    def __str__(self):
+        return str(self.title)
+
 class Agent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    country = CountryField(blank=True, null=True)
+    state = models.CharField(null=True, blank=True, max_length=100)
+    preference = models.ForeignKey(
+        Preferences,
+        on_delete=models.DO_NOTHING,
+        related_name='preferece_as_agent' 
+    )
+    services = models.ManyToManyField(
+        Services,
+        related_name='services_as_agent'
+    )
+    id_type = models.ForeignKey(
+        Idtype,
+        on_delete=models.DO_NOTHING,
+        related_name='id_type' 
+    )
+    id_file = models.FileField(blank=False, null=False, upload_to='uploads/agents-documents')
+    photo = models.ImageField(blank=True, null=True, upload_to='uploads/agents-photos')
+    pay_per_hour = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    arrival_speed = models.IntegerField(help_text="How fast can you drive in km/h?", null=True, blank=True)
+    delivery_speed = models.IntegerField(help_text="How fast can you drive in km/h?", null=True, blank=True)
+    bank_name = models.CharField(max_length=100)
+    account_number = models.CharField(max_length=30)
+    beneficiary_name = models.CharField(max_length=30, null=True, blank=True)
+    
+    
 
     def __str__(self):
         return str(self.user)
+
