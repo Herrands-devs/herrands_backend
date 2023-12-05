@@ -34,7 +34,7 @@ class StandardResultsSetPagination(pagination.PageNumberPagination):
 
 class UserErrandTaskViewSet(viewsets.ModelViewSet):
     queryset = ErrandTask.objects.all()
-    serializer_class = ErrandTaskSerializer
+    serializer_class = NestedErrandSerializer
     permission_classes = [permissions.IsAuthenticated]  # Adjust the permission as needed
     pagination_class = StandardResultsSetPagination  # Enable pagination
 
@@ -63,6 +63,25 @@ class UserErrandTaskViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(customer_errands, many=True)
         return Response(serializer.data)'''
+
+class UserCompletedErrandTaskViewSet(viewsets.ModelViewSet):
+    queryset = ErrandTask.objects.all()
+    serializer_class = NestedErrandSerializer
+    permission_classes = [permissions.IsAuthenticated]  # Adjust the permission as needed
+    pagination_class = StandardResultsSetPagination  # Enable pagination
+
+    @action(detail=False, methods=['GET'])
+    def agent_errands(self, request):
+        # Get errands for the current authenticated agent
+        agent_errands = ErrandTask.objects.filter(agent=request.user, status="COMPLETED")
+        page = self.paginate_queryset(agent_errands)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(agent_errands, many=True)
+        return Response(serializer.data)
 
 
 
