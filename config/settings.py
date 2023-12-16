@@ -116,12 +116,13 @@ AUTHENTICATION_BACKENDS = ['accounts.auth_backends.EmailBackend']
 DATABASES = {
     'default': dj_database_url.config(default='postgres://uivvdumiohjcfh:bb8fee2ffea9183569d7338b20726d75b22d9c5a4bbde32811cfff7ff6c2643d@ec2-34-202-53-101.compute-1.amazonaws.com:5432/d3fnc24idd8345')
 }
+REDIS_URL = 'rediss://default:AVNS_cJ-asNUWZ6ih8QYqCMF@db-redis-nyc3-06498-do-user-15379078-0.c.db.ondigitalocean.com:25061'
 
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
        'CONFIG': {
-            'hosts': [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+            'hosts': [os.environ.get('REDIS_URL', REDIS_URL)],
             
         },
     },
@@ -180,7 +181,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = 'static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-MEDIA_URL = 'https://herrand-backend-5a39ee15054e.herokuapp.com/media/'
+MEDIA_URL = 'https://jellyfish-app-gd9q8.ondigitalocean.app/media/'
 
 #MEDIA_ROOT = Path(BASE_DIR / 'media')
 
