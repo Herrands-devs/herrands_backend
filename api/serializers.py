@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from accounts.serializers import UserSerializer
-from .models import Category, Subtype, File, ErrandTask, VehicleMetric, DistanceMetric
+from .models import Category, Earnings, Wallet, Subtype, File, ErrandTask, VehicleMetric, DistanceMetric, Conversation, Message
 import base64
 from django.core.files.base import ContentFile
 from rest_framework.exceptions import APIException
@@ -23,6 +23,8 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     distance = 6371 * c
 
     return distance
+
+
 
 class APIException400(APIException):
     status_code = 400
@@ -69,6 +71,14 @@ class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
         fields = '__all__'
+
+class AdminErrandSerializer(serializers.ModelSerializer):
+    customer = UserSerializer()
+    agent = UserSerializer()
+    class Meta:
+        model= ErrandTask
+        fields = ['id', 'customer', 'agent', 'describe_errand', 'total_cost', 'pick_up_address', 'drop_off_address', 'created', 'updated', 'status']
+        depth = 1
 
 class ErrandTaskSerializer(serializers.ModelSerializer):
     files = FileSerializer(many=True, required=False)
@@ -125,6 +135,7 @@ class ErrandTaskSerializer(serializers.ModelSerializer):
         errand_task = ErrandTask.objects.create(category=category_data, subtype=subtype_data, distance_in_km = distance_in_km, total_cost=total_cost, **validated_data)
         if files:
             errand_task.files.set(files)
+        
 
         return errand_task
 
@@ -138,4 +149,60 @@ class NestedErrandSerializer(serializers.ModelSerializer):
         model = ErrandTask
         fields = '__all__'
         depth = 1
+
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = '__all__'
+        ordering = ['-h']
+        
+
+class NestedMessageSerializer(serializers.ModelSerializer):
+    sender = UserSerializer()
+    class Meta:
+        model = Message
+        exclude = ('conversation_id',)
+
+
+class ConversationListSerializer(serializers.ModelSerializer):
+    customer = UserSerializer()
+    #agent = UserSerializer()
+    last_message = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Conversation
+        fields = ['id', 'customer', 'last_message', 'errand']
+
+    '''def get_last_message(self, instance):
+        message = instance.message_set.first()
+        return MessageSerializer(instance=message)'''
+    def get_last_message(self, instance):
+        message = instance.message_set.last()
+        return MessageSerializer(instance=message).data
+
+
+class ConversationSerializer(serializers.ModelSerializer):
+    customer = UserSerializer()
+    agent = UserSerializer()
+    message_set = MessageSerializer(many=True)
+
+    class Meta:
+        model = Conversation
+        fields = ['customer', 'agent', 'message_set']
+    
+    def get_message_set(self, instance):
+        ordered_messages = instance.ordered_messages.all(id=1)
+        return MessageSerializer(instance=ordered_messages, many=True).data
+
+class EarningsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Earnings
+        fields = ['amount', 'timestamp']
+
+class WalletSerializer(serializers.ModelSerializer):
+    #earnings = EarningsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Wallet
+        fields = ['balance', 'timestamp']
 

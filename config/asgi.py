@@ -16,13 +16,14 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 from config.middleware import TokenAuthMiddlewareStack
-from api.consumers import ErrandConsumer
+from api.consumers import ErrandConsumer, ChatConsumer
 
 application = ProtocolTypeRouter({
     'http': get_asgi_application(),
     'websocket': TokenAuthMiddlewareStack(
         URLRouter([
             path('errand/', ErrandConsumer.as_asgi()),
+            path('ws/chat/<str:room_name>/', ChatConsumer.as_asgi()),
         ])
     ),
 })

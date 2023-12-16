@@ -60,7 +60,10 @@ class CustomUserManager(BaseUserManager):
             raise ValueError(_('Superuser must have is_superuser=True.'))
         return self.create_user(email, password,phone_number="+2348055343591", **extra_fields)
 
+
+
 USER_TYPE = (('Agent', 'Agent'), ('Customer', 'Customer'))
+STATUS = (('Active', 'Active'), ('Suspended', 'Suspended'), ('Banned', 'Banned'), ('Pending', 'Pending'))
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None
@@ -75,6 +78,7 @@ class User(AbstractUser):
     user_type = models.CharField(max_length=20, choices=USER_TYPE)
     otp = models.CharField(max_length=6, null=True, blank=True)
     account_completed = models.BooleanField(default=False)
+    status = models.CharField(max_length=100, null=True, blank=True, choices=STATUS, default='Active')
 
 
     USERNAME_FIELD = 'email'
@@ -96,6 +100,9 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+
 
 
 

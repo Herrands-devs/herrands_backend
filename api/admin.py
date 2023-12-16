@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Subtype, File, ErrandTask
+from .models import Category, Subtype, File, ErrandTask, Conversation, Message, Earnings
 
 # Define custom admin classes if needed
 
@@ -62,3 +62,22 @@ class ErrandTaskAdmin(admin.ModelAdmin):
             return False
         return super().has_change_permission(request, obj)
 
+@admin.register(Conversation)
+class ConversationAdmin(admin.ModelAdmin):
+    list_display = ['errand', 'customer', 'agent', 'start_time']
+    search_fields = ['errand__id', 'customer__username', 'agent__username']
+    date_hierarchy = 'start_time'
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ['sender', 'text', 'attachment', 'conversation_id', 'timestamp']
+    search_fields = ['sender__username', 'conversation_id__errand__id']
+    date_hierarchy = 'timestamp'
+
+class EarningsAdmin(admin.ModelAdmin):
+    list_display = ('wallet', 'amount', 'timestamp')
+    list_filter = ('wallet__user__email', 'timestamp')
+    search_fields = ('wallet__user__email', 'amount')
+    date_hierarchy = 'timestamp'
+
+admin.site.register(Earnings, EarningsAdmin)

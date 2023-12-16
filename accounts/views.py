@@ -15,6 +15,49 @@ from django.db.models import Q
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
+
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size = 10  # Set the number of items per page
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class AgentListView(generics.ListAPIView):
+    queryset = Agent.objects.all()
+    serializer_class = AgentSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPageNumberPagination  # Use your custom pagination class
+
+    def get(self, request, *args, **kwargs):
+        # Use the pagination class to get the paginated response
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+class CustomerListView(generics.ListAPIView):
+    queryset = User.objects.filter(user_type='Customer')
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = CustomPageNumberPagination  # Use your custom pagination class
+
+    def get(self, request, *args, **kwargs):
+        # Use the pagination class to get the paginated response
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 class UserDeletionView(DestroyAPIView):
     serializer_class = UserDeletionSerializer
@@ -228,5 +271,13 @@ def update_agent_data(request):
         return Response({'error': 'User is not associated with an agent.'}, status=status.HTTP_404_NOT_FOUND)
 
 
+class AgentDetailsAPIView(generics.RetrieveAPIView):
+    queryset = Agent.objects.all()
+    serializer_class = AgentSerializer
+    lookup_field = 'user__id'
 
+class CustomerDetailsAPIView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_field = 'id'
 

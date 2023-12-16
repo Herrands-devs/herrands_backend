@@ -65,14 +65,14 @@ class IdtypeSerializer(serializers.ModelSerializer):
 
 
 class TokenObtainPairSerializer(JwtTokenObtainPairSerializer):
-    contact = serializers.CharField()
+    username_field = get_user_model().USERNAME_FIELD
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ('id', 'email', 'first_name', 'last_name', 'phone_number', 'user_type', 'account_completed')
-        read_only_fields = ('id', 'account_completed')
+        fields = ('id', 'email', 'first_name', 'last_name', 'phone_number', 'user_type', 'status', 'account_completed')
+        read_only_fields = ('id', 'account_completed', 'status')
     def validate_email(self, value):
         if not value:
             raise serializers.ValidationError("Email is required.")
@@ -102,6 +102,12 @@ class UserSerializer(serializers.ModelSerializer):
             data['agent'] = agent_data
 
         return data
+
+class User2Serializer(serializers.ModelSerializer):
+    num_errands = serializers.IntegerField(source='errands_count', read_only=True)
+    class Meta:
+        model = get_user_model()
+        fields = ['id', 'first_name', 'last_name', 'email', 'num_errands']
     
     
 
@@ -117,7 +123,7 @@ class AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
         exclude = ['country']
-        read_only_fields = ('photo',  'pay_per_hour', 'arrival_speed', 'delivery_speed', 'bank_name', 'account_number', 'beneficiary_name')
+        read_only_fields = ('id', 'photo', 'pay_per_hour', 'arrival_speed', 'delivery_speed', 'bank_name', 'account_number', 'beneficiary_name')
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         services = validated_data.pop('services', [])
@@ -127,6 +133,15 @@ class AgentSerializer(serializers.ModelSerializer):
         agent.services.set(services)
 
         return agent
+
+class Agent2Serializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    num_errands = serializers.IntegerField(source='errands_count', read_only=True)
+    class Meta:
+        model = Agent
+        fields = ['user', 'num_errands']
+    
+
 
     
 
