@@ -190,6 +190,6 @@ MEDIA_URL = 'https://herrand-backend-5a39ee15054e.herokuapp.com/media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
-CSRF_TRUSTED_ORIGINS = ['https://herrand-backend-5a39ee15054e.herokuapp.com']
+CSRF_TRUSTED_ORIGINS = ['https://herrand-backend-5a39ee15054e.herokuapp.com', 'https://jellyfish-app-gd9q8.ondigitalocean.app']
 
 
