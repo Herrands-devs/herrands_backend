@@ -83,7 +83,7 @@ class ErrandTask(models.Model):
     recipient_contact = PhoneNumberField(null=True, blank=True)
     sender_contact = PhoneNumberField(null=True, blank=True)
     item_description = models.TextField(null=True, blank=True)
-    grocery_list = models.JSONField(blank=True, null=True)
+    grocery_list = models.TextField(blank=True, null=True)
     grocery_estimated_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     describe_errand = models.TextField(null=True, blank=True)
     how_long = models.PositiveIntegerField(null=True, blank=True)
