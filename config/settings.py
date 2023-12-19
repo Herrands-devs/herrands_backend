@@ -118,15 +118,6 @@ DATABASES = {
 }
 REDIS_URL = 'rediss://default:AVNS_-asNUWqCMF@private-db-redis-nyc3-06498-do-user-15379078-0.c.db.ondigitalocean.com:25061'
 
-'''CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-       'CONFIG': {
-            'hosts': [REDIS_URL],
-            
-        },
-    },
-}'''
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -135,6 +126,16 @@ CHANNEL_LAYERS = {
         },
     },
 }
+'''CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+       'CONFIG': {
+            'hosts': [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+            
+        },
+    },
+}'''
+
 
 
 REST_FRAMEWORK = {

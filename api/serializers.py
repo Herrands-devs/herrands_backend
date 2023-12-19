@@ -111,17 +111,20 @@ class ErrandTaskSerializer(serializers.ModelSerializer):
         category_data = validated_data.pop('category')
         subtype_data = validated_data.pop('subtype')
         # Handle the case where 'files' is not provided or is an empty list
-        validated_data_copy = validated_data.copy()
-        lat_1 = validated_data_copy.pop('pick_up_lat')
-        long_1 = validated_data_copy.pop('pick_up_long')
-        lat_2 = validated_data_copy.pop('drop_off_lat')
-        long_2 = validated_data_copy.pop('drop_off_long')
-        distance_in_km = calculate_distance(lat_1, long_1, lat_2, long_2)
-        print(distance_in_km)
-        vehicle_type = validated_data_copy.pop('vehicle_type')
-        vehicle_instance = VehicleMetric.objects.get(id=vehicle_type.id)
-        total_cost = Decimal(str(vehicle_instance.cost)) * Decimal(str(distance_in_km))
-        print(total_cost)
+        total_cost = 0
+        distance_in_km = 0
+        if subtype_data == 2:
+            validated_data_copy = validated_data.copy()
+            lat_1 = validated_data_copy.pop('pick_up_lat')
+            long_1 = validated_data_copy.pop('pick_up_long')
+            lat_2 = validated_data_copy.pop('drop_off_lat')
+            long_2 = validated_data_copy.pop('drop_off_long')
+            distance_in_km = calculate_distance(lat_1, long_1, lat_2, long_2)
+            print(distance_in_km)
+            vehicle_type = validated_data_copy.pop('vehicle_type')
+            vehicle_instance = VehicleMetric.objects.get(id=vehicle_type.id)
+            total_cost = Decimal(str(vehicle_instance.cost)) * Decimal(str(distance_in_km))
+            print(total_cost)
 
         
 

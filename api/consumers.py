@@ -357,9 +357,9 @@ class ErrandConsumer(AsyncJsonWebsocketConsumer):
         message_type = content.get('type')
         if message_type == 'create.errand':
             await self.create_errand(content)
-        elif message_type == 'create.routine_errand':
+        elif message_type == 'create.routine_errand' or message_type == 'create.household_chores':
             await self.create_routine_errand(content)
-        elif message_type == 'complete.routine_errand':
+        elif message_type == 'complete.routine_errand' or message_type == 'complete.household_chores':
             await self.complete_routine_errand(content)
         elif message_type == 'errand.requested':
             await self.echo_message(content)
