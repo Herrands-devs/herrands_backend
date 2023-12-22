@@ -86,7 +86,7 @@ class ErrandTask(models.Model):
     grocery_list = models.TextField(blank=True, null=True)
     grocery_estimated_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     describe_errand = models.TextField(null=True, blank=True)
-    how_long = models.PositiveIntegerField(null=True, blank=True)
+    how_long = models.CharField(max_length=200, null=True, blank=True)
     due_date = models.DateTimeField(blank=True, null=True)
     files = models.ManyToManyField(File, blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUSES, default=REQUESTED)
