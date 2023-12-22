@@ -57,6 +57,9 @@ class ErrandTask(models.Model):
     IN_PROGRESS = 'IN_PROGRESS'
     COMPLETED = 'COMPLETED'
     PICKED_UP = 'PICKED_UP'
+    MONTHS= 'MONTHS'
+    DAYS = 'DAYS'
+    HOURS = 'HOURS'
     STATUSES = (
         (REQUESTED, REQUESTED),
         (REJECTED, REJECTED),
@@ -66,6 +69,11 @@ class ErrandTask(models.Model):
         (IN_PROGRESS, IN_PROGRESS),
         (COMPLETED, COMPLETED),
         (PICKED_UP, PICKED_UP)
+    )
+    TIME_CAP = (
+        (HOURS, HOURS),
+        (DAYS, DAYS),
+        (MONTHS, MONTHS),
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -86,7 +94,8 @@ class ErrandTask(models.Model):
     grocery_list = models.TextField(blank=True, null=True)
     grocery_estimated_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     describe_errand = models.TextField(null=True, blank=True)
-    how_long = models.CharField(max_length=200, null=True, blank=True)
+    how_long = models.PositiveIntegerField(null=True, blank=True)
+    time_cap = models.CharField(max_length=100, null=True, blank=True, choices=TIME_CAP)
     due_date = models.DateTimeField(blank=True, null=True)
     files = models.ManyToManyField(File, blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUSES, default=REQUESTED)
