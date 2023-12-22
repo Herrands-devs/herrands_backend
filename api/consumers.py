@@ -363,6 +363,8 @@ class ErrandConsumer(AsyncJsonWebsocketConsumer):
             await self.complete_routine_errand(content)
         elif message_type == 'create.outdoor_errand':
             await self.create_routine_errand(content)
+        elif message_type == 'complete.outdoor_errand':
+            await self.complete_routine_errand(content)
         elif message_type == 'errand.requested':
             await self.echo_message(content)
         elif message_type == 'echo.message':
