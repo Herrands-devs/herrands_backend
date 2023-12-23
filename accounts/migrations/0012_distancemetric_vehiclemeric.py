@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
             name='VehicleMeric',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('vehicle_type', models.CharField()),
+                ('vehicle_type', models.CharField(max_length=200)),
                 ('cost', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True)),
             ],
         ),

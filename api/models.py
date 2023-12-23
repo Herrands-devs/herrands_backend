@@ -9,7 +9,7 @@ from django.dispatch import receiver
 # Create your models here.
 
 '''class VehicleType(models.Model):
-    vehicle = models.CharField()
+    vehicle = models.CharField(max_length=200)
 
     def __str__(self):
         return self.vehicle'''

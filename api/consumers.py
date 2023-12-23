@@ -129,7 +129,7 @@ class ErrandConsumer(AsyncJsonWebsocketConsumer):
     def _get_message_data(self, message):
         return NestedMessageSerializer(message).data
 
-    @database_sync_to_async
+    '''@database_sync_to_async
     def _get_errand_ids(self, user):
         is_agent = user.user_type
 
@@ -146,7 +146,34 @@ class ErrandConsumer(AsyncJsonWebsocketConsumer):
                 user_cancelled=False
             ).values_list('id', flat=True)
 
+        return map(str, errandtask_ids)'''
+    @database_sync_to_async
+    def _get_errand_ids(self, user):
+        is_agent = user.user_type
+
+        # Determine the field and value based on the user type
+        '''field_name = "agent" if is_agent == 'Agent' else "customer"
+        field_value = user
+
+        # Perform a single query for errand task IDs
+        errandtask_ids = ErrandTask.objects.filter(
+            **{f"{field_name}": field_value},
+            status__in=[ErrandTask.REQUESTED, ErrandTask.ACCEPTED, ErrandTask.ARRIVED, ErrandTask.STARTED, ErrandTask.IN_PROGRESS],
+            user_cancelled=False
+        ).values_list('id', flat=True)
+
+        # Convert the IDs to strings and return
+        return map(str, errandtask_ids)'''
+        if is_agent == 'Agent':
+            errandtask_ids = user.errands_as_agent.exclude(
+                status=ErrandTask.COMPLETED
+            ).only('id').values_list('id', flat=True)
+        else:
+            errandtask_ids = user.errands_as_customer.exclude(
+                status=ErrandTask.COMPLETED
+            ).only('id').values_list('id', flat=True)
         return map(str, errandtask_ids)
+
 
 
 
@@ -195,22 +222,16 @@ class ErrandConsumer(AsyncJsonWebsocketConsumer):
                     )
                     print('i am an agent')
 
-            errand_ids = await self._get_errand_ids(user)
-            for errand_id in errand_ids:
-                await self.channel_layer.group_add(
-                        group=f'errand_{errand_id}',
-                        channel=self.channel_name
-                    )
-                print(f'Connection established: Customer for Errand {errand_id}')
+                #errand_ids = await self._get_errand_ids(user)
+                await self.accept()
+                for errand_id in await self._get_errand_ids(user):
+                    await self.channel_layer.group_add(
+                            group=f'errand_{errand_id}',
+                            channel=self.channel_name
+                        )
+                    print(f'Connection established: Customer for Errand {errand_id}')
 
-            # Convert the map object to a list
-            errand_ids_list = list(errand_ids)
-
-            # Connection established for all errands
-            print(f'Connection established: Customer for Errands {errand_ids_list}')
-
-            # Accept the connection
-            await self.accept()
+               
             
             
 

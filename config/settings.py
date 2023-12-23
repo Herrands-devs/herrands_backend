@@ -114,7 +114,7 @@ AUTHENTICATION_BACKENDS = ['accounts.auth_backends.EmailBackend']
     }
 }'''
 DATABASES = {
-    'default': dj_database_url.config(default='postgres://uivvdumiohjcfh:bb8fee2ffea9183569d7338b20726d75b22d9c5a4bbde32811cfff7ff6c2643d@ec2-34-202-53-101.compute-1.amazonaws.com:5432/d3fnc24idd8345')
+    'default': dj_database_url.config(default='postgresql://doadmin:AVNS_hEVE6gZrX_j5tGiE9ar@db-postgresql-nyc3-68851-do-user-15379078-0.c.db.ondigitalocean.com:25060/defaultdb?sslmode=require')
 }
 REDIS_URL = 'rediss://default:AVNS_-asNUWqCMF@private-db-redis-nyc3-06498-do-user-15379078-0.c.db.ondigitalocean.com:25061'
 
