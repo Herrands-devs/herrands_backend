@@ -127,7 +127,7 @@ class AgentSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         services = validated_data.pop('services', [])
-        user = User.objects.create(**user_data)
+        user = User.objects.create(is_agent=True, **user_data)
         
         agent = Agent.objects.create(user=user, **validated_data)
         agent.services.set(services)

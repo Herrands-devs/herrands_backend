@@ -174,7 +174,7 @@ class ConversationListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Conversation
-        fields = ['id', 'customer', 'last_message', 'errand']
+        fields = ['id', 'customer', 'last_message', 'errand', 'start_time']
 
     '''def get_last_message(self, instance):
         message = instance.message_set.first()
@@ -190,7 +190,7 @@ class ConversationListSerializer2(serializers.ModelSerializer):
 
     class Meta:
         model = Conversation
-        fields = ['id', 'agent', 'last_message', 'errand']
+        fields = ['id', 'agent', 'last_message', 'errand', 'start_time']
 
     '''def get_last_message(self, instance):
         message = instance.message_set.first()
@@ -216,6 +216,12 @@ class EarningsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Earnings
         fields = ['amount', 'timestamp']
+
+class WithdrawalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Earnings
+        fields = ['bank_name', 'bank_account_number', 'beneficiary_name', 'amount', 'timestamp']
+
 
 class WalletSerializer(serializers.ModelSerializer):
     #earnings = EarningsSerializer(many=True, read_only=True)

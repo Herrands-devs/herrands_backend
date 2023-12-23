@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CategoryViewSet,AdminTopAgentsView, AdminErrandsComparisonView, AdminTopCustomersView, AdminErrandTaskViewSet, CustomerConversationsView, AgentConversationsView, EarningsListView, WalletView, ConversationListAPIView, ErrandTaskViewSet, UserErrandTaskViewSet, UserCompletedErrandTaskViewSet, CreateErrandView, SubtypeViewSet, VehicleMetricViewSet, DistanceMetricViewSet
+from .views import CategoryViewSet,AdminTopAgentsView, WithdrawalView, AdminErrandsComparisonView, AdminTopCustomersView, AdminErrandTaskViewSet, CustomerConversationsView, AgentConversationsView, EarningsListView, WalletView, ConversationListAPIView, ErrandTaskViewSet, UserErrandTaskViewSet, UserCompletedErrandTaskViewSet, CreateErrandView, SubtypeViewSet, VehicleMetricViewSet, DistanceMetricViewSet
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
@@ -26,6 +26,7 @@ urlpatterns = [
     path('user_errand_tasks/customer_errands/', UserErrandTaskViewSet.as_view({'get': 'customer_errands'}), name='customer_errands'),
     path('wallet/', WalletView.as_view(), name='wallet'),
     path('earnings/', EarningsListView.as_view(), name='earnings-list'),
+    path('withdrawals/', WithdrawalView.as_view(), name='withdrawals-list'),
     path('<int:convo_id>/', views.get_conversation, name='get_conversation'),
     path('agent-conversations', AgentConversationsView.as_view(), name='agent-conversations'),
     path('customer-conversations', CustomerConversationsView.as_view(), name='customer-conversations'),

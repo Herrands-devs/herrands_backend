@@ -180,8 +180,27 @@ class Earnings(models.Model):
     def __str__(self):
         return f"Earnings for {self.wallet.user.email} - {self.amount}"
 
+class Withdrawals(models.Model):
+    bank_name = models.CharField(max_length=200)
+    bank_account_number = models.PositiveIntegerField()
+    beneficiary_name = models.CharField(max_length=200)
+    wallet = models.ForeignKey(Wallet, on_delete=models.SET_NULL, null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Withdrawal for {self.wallet.user.email} - {self.amount}"
+
+
 
 @receiver(post_save, sender=Earnings)
+def update_wallet_balance(sender, instance, created, **kwargs):
+    if created:
+        wallet = instance.wallet
+        wallet.balance += instance.amount
+        wallet.save()
+
+@receiver(post_save, sender=Withdrawals)
 def update_wallet_balance(sender, instance, created, **kwargs):
     if created:
         wallet = instance.wallet

@@ -1,5 +1,5 @@
 from rest_framework import viewsets, pagination
-from .models import Category, Wallet, ErrandTask, Subtype, VehicleMetric, DistanceMetric, Conversation, Message
+from .models import Category, Wallet, Withdrawals, ErrandTask, Subtype, VehicleMetric, DistanceMetric, Conversation, Message
 from .serializers import *
 from rest_framework import generics
 from rest_framework.generics import CreateAPIView,ListAPIView,RetrieveAPIView,UpdateAPIView
@@ -288,6 +288,25 @@ class EarningsListView(generics.ListAPIView):
             queryset = queryset.filter(timestamp__day=day)
 
         return queryset
+
+class WithdrawalView(APIView):
+    serializer_class = WithdrawalSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, request):
+        serialize.save(wallet__user=self.request.user)
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def get(self, request):
+        withdrwals = Withdrawals.objects.filter(wallet__user=self.request.user)
+        serializer = WithdrawalSerializer(withdrwals, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class AdminTopCustomersView(APIView):
     permission_classes = [IsAuthenticated]
