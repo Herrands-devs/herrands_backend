@@ -237,6 +237,14 @@ class AgentConversationsView(APIView):
         conversations = Conversation.objects.filter(agent__id=user_id)
         serializer = ConversationListSerializer(conversations, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class CustomerConversationsView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user_id = request.user.id
+        conversations = Conversation.objects.filter(customer__id=user_id)
+        serializer = ConversationListSerializer(conversations, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
  
 class WalletView(generics.RetrieveAPIView):
     serializer_class = WalletSerializer
