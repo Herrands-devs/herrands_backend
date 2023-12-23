@@ -242,7 +242,7 @@ class CustomerConversationsView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         user_id = request.user.id
-        conversations = Conversation.objects.filter(customer__id=user_id)
+        conversations = Conversation.objects.filter(customer__id=user_id).exclude(agent=None)
         serializer = ConversationListSerializer2(conversations, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
  
