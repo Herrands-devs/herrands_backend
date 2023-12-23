@@ -183,6 +183,21 @@ class ConversationListSerializer(serializers.ModelSerializer):
         message = instance.message_set.last()
         return MessageSerializer(instance=message).data
 
+class ConversationListSerializer2(serializers.ModelSerializer):
+    #customer = UserSerializer()
+    agent = UserSerializer()
+    last_message = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Conversation
+        fields = ['id', 'agent', 'last_message', 'errand']
+
+    '''def get_last_message(self, instance):
+        message = instance.message_set.first()
+        return MessageSerializer(instance=message)'''
+    def get_last_message(self, instance):
+        message = instance.message_set.last()
+        return MessageSerializer(instance=message).data
 
 class ConversationSerializer(serializers.ModelSerializer):
     customer = UserSerializer()
