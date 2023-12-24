@@ -146,7 +146,7 @@ class Agent2Serializer(serializers.ModelSerializer):
     
 
 class AgentUpdateSerializer(serializers.ModelSerializer):
-    photo = Base64ImageField()
+    #photo = Base64ImageField()
     class Meta:
         model = Agent
         fields = ['photo', 'pay_per_hour', 'arrival_speed', 'delivery_speed', 'bank_name', 'account_number', 'beneficiary_name']

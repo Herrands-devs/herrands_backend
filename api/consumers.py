@@ -349,7 +349,18 @@ class ErrandConsumer(AsyncJsonWebsocketConsumer):
                 'type': 'errand.created',
                 'data': errand_data,
             })
+    
+    async def get_agents(self, message):
+        data = message.get('data')
+        '''pickup_lat = data.get('pick_up_lat')
+        pickup_long = data.get('pick_up_long')'''
 
+        nearby_agents = await self._get_nearest_agents()
+
+        await self.send_json({
+            'type': 'echo.message',
+            'data': nearby_agents
+        })
     
 
     async def disconnect(self, code):
