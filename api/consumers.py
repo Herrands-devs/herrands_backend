@@ -380,10 +380,15 @@ class ErrandConsumer(AsyncJsonWebsocketConsumer):
     async def errand_accepted(self, event):
         # Handle the 'errand.requested' message type here
         # You can send a response back to the client or perform any necessary logic
+        print(event['data']['status'])
         await self.send_json({
-            'type': 'errand.accepted',
+            'type': 'errand.' + event['data']['status'],
             'data': event['data'],
         })
+
+    
+    
+    
 
     async def receive_json(self, content, **kwargs):
         message_type = content.get('type')
@@ -487,18 +492,18 @@ class ErrandConsumer(AsyncJsonWebsocketConsumer):
             
 
             # Send update to rider.
-            await self.channel_layer.group_send(
-                group=errand_id,
-                message={
-                    'type': 'errand.accepted',
-                    'data': errand_data,
-                }
-            )
-
-            await self.send_json({
+        await self.channel_layer.group_send(
+            group=errand_id,
+            message={
                 'type': 'errand.accepted',
-                'data': errand_data
-            })
+                'data': errand_data,
+            }
+        )
+
+        '''await self.send_json({
+            'type': 'errand.' + errand_data.status,
+            'data': errand_data
+        })'''
 
     async def complete_routine_errand(self, message):
         data = message.get('data')
