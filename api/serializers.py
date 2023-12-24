@@ -113,7 +113,7 @@ class ErrandTaskSerializer(serializers.ModelSerializer):
         # Handle the case where 'files' is not provided or is an empty list
         total_cost = 0
         distance_in_km = 0
-        if subtype_data == 2:
+        if subtype_data == 9:
             validated_data_copy = validated_data.copy()
             lat_1 = validated_data_copy.pop('pick_up_lat')
             long_1 = validated_data_copy.pop('pick_up_long')
