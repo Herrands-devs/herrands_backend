@@ -143,7 +143,7 @@ class Agent(models.Model):
         related_name='id_type' 
     )
     id_file = models.FileField(blank=False, null=False, upload_to='uploads/agents-documents')
-    photo = models.ImageField(blank=True, null=True, upload_to='uploads/agents-photos')
+    photo = models.URLField(null=True, blank=True)
     pay_per_hour = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     arrival_speed = models.IntegerField(help_text="How fast can you drive in km/h?", null=True, blank=True)
     delivery_speed = models.IntegerField(help_text="How fast can you drive in km/h?", null=True, blank=True)
