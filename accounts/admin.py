@@ -15,6 +15,7 @@ class CustomUserAdmin(BaseUserAdmin):
         (_('Personal Info'), {'fields': ('first_name', 'last_name', 'phone_number', 'user_type', 'otp', 'is_agent', 'is_customer')}),
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'account_completed', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+        (_('Location'), {'fields': ('current_long','current_lat', 'current_location')}),
     )
 
     add_fieldsets = (

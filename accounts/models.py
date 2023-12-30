@@ -73,6 +73,7 @@ class User(AbstractUser):
     phone_number = PhoneNumberField(unique=True)
     current_lat = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
     current_long = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
+    current_location = models.TextField(max_length=200, null=True, blank=True)
     is_agent = models.BooleanField(default=False)
     is_customer = models.BooleanField(default=False)
     user_type = models.CharField(max_length=20, choices=USER_TYPE)

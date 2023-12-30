@@ -217,3 +217,14 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class UserDeletionSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
+
+
+class UserLocationUpdateSerializer(serializers.Serializer):
+    current_lat = serializers.DecimalField(max_digits=30, decimal_places=15, required=True)
+    current_long = serializers.DecimalField(max_digits=30, decimal_places=15, required=True)
+
+    def update(self, instance, validated_data):
+        instance.current_lat = validated_data.get('current_lat', instance.current_lat)
+        instance.current_long = validated_data.get('current_long', instance.current_long)
+        instance.save()
+        return instance
