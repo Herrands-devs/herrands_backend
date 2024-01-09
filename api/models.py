@@ -75,6 +75,13 @@ class ErrandTask(models.Model):
         (DAYS, DAYS),
         (MONTHS, MONTHS),
     )
+    RATINGS = (
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4,4),
+        (5,5)
+    )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created = models.DateTimeField(auto_now_add=True)
@@ -125,6 +132,8 @@ class ErrandTask(models.Model):
     vehicle_type = models.ForeignKey(VehicleMetric, on_delete=models.SET_NULL, null=True, blank=True)
     distance_in_km = models.FloatField(null=True, blank=True)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    agent_rating = models.CharField(max_length=100, null=True, blank=True, choices=RATINGS)
+
 
     def __str__(self):
         return f'{self.id}'

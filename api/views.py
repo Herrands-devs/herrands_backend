@@ -120,6 +120,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
+class AllSubtypesViewSet(viewsets.ModelViewSet):
+    queryset = Subtype.objects.all()
+    serializer_class = SubtypeSerializer
+
 class ErrandTaskViewSet(viewsets.ModelViewSet):
     queryset = ErrandTask.objects.all()
     serializer_class = ErrandTaskSerializer

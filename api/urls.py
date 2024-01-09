@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CategoryViewSet,AdminTopAgentsView, WithdrawalView, AdminErrandsComparisonView, AdminTopCustomersView, AdminErrandTaskViewSet, CustomerConversationsView, AgentConversationsView, EarningsListView, WalletView, ConversationListAPIView, ErrandTaskViewSet, UserErrandTaskViewSet, UserCompletedErrandTaskViewSet, CreateErrandView, SubtypeViewSet, VehicleMetricViewSet, DistanceMetricViewSet
+from .views import CategoryViewSet,AdminTopAgentsView, AllSubtypesViewSet, WithdrawalView, AdminErrandsComparisonView, AdminTopCustomersView, AdminErrandTaskViewSet, CustomerConversationsView, AgentConversationsView, EarningsListView, WalletView, ConversationListAPIView, ErrandTaskViewSet, UserErrandTaskViewSet, UserCompletedErrandTaskViewSet, CreateErrandView, SubtypeViewSet, VehicleMetricViewSet, DistanceMetricViewSet
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
@@ -9,6 +9,7 @@ from . import views
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet)
 router.register(r'subtypes', SubtypeViewSet, basename='subtype')
+router.register(r'all-subtypes', AllSubtypesViewSet, basename='all-subtypes')
 router.register(r'errand-tasks', ErrandTaskViewSet)
 router.register(r'admin-errand-tasks', AdminErrandTaskViewSet)
 router.register(r'vehicle-metric', VehicleMetricViewSet)
