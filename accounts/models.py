@@ -151,6 +151,7 @@ class Agent(models.Model):
     bank_name = models.CharField(max_length=100)
     account_number = models.CharField(max_length=30)
     beneficiary_name = models.CharField(max_length=30, null=True, blank=True)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     
     
 

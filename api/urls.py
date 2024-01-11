@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CategoryViewSet,AdminTopAgentsView, AllSubtypesViewSet, WithdrawalView, AdminErrandsComparisonView, AdminTopCustomersView, AdminErrandTaskViewSet, CustomerConversationsView, AgentConversationsView, EarningsListView, WalletView, ConversationListAPIView, ErrandTaskViewSet, UserErrandTaskViewSet, UserCompletedErrandTaskViewSet, CreateErrandView, SubtypeViewSet, VehicleMetricViewSet, DistanceMetricViewSet
+from .views import CategoryViewSet,AdminTopAgentsView, AgentRatingView, AllSubtypesViewSet, WithdrawalView, AdminErrandsComparisonView, AdminTopCustomersView, AdminErrandTaskViewSet, CustomerConversationsView, AgentConversationsView, EarningsListView, WalletView, ConversationListAPIView, ErrandTaskViewSet, UserErrandTaskViewSet, UserCompletedErrandTaskViewSet, CreateErrandView, SubtypeViewSet, VehicleMetricViewSet, DistanceMetricViewSet
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
@@ -34,6 +34,7 @@ urlpatterns = [
     path('top-customers/', AdminTopCustomersView.as_view(), name='top-customers'),
     path('top-agents/', AdminTopAgentsView.as_view(), name='top-agents'),
     path('errands-dashboard/', AdminErrandsComparisonView.as_view(), name='errands-comparison'),
+    path('rate-agent/', AgentRatingView.as_view(), name='rate-agent'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,

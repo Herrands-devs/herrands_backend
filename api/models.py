@@ -132,7 +132,7 @@ class ErrandTask(models.Model):
     vehicle_type = models.ForeignKey(VehicleMetric, on_delete=models.SET_NULL, null=True, blank=True)
     distance_in_km = models.FloatField(null=True, blank=True)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    agent_rating = models.CharField(max_length=100, null=True, blank=True, choices=RATINGS)
+    agent_rating = models.IntegerField(null=True, blank=True, choices=RATINGS)
 
 
     def __str__(self):

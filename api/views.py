@@ -437,4 +437,36 @@ class AdminErrandsComparisonView(APIView):
             return 100
         else:
             return round(((current_value - previous_value) / previous_value) * 100, 2)
+        
+
+class AgentRatingView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = AgentRatingSerializer(data=request.data)
+        if serializer.is_valid():
+            errand_id = serializer.validated_data['errand_id']
+            user_rating = serializer.validated_data['user_rating']
+
+            # Update the agent_rating field in the corresponding ErrandTask instance
+            errand_task = ErrandTask.objects.filter(id=errand_id, agent_rating__isnull=True).first()
+            if errand_task:
+                errand_task.agent_rating = user_rating
+                errand_task.save()
+
+                # Recalculate total and average ratings for the agent and update the Agent model
+                agent = errand_task.agent
+                all_ratings = ErrandTask.objects.filter(agent=agent, agent_rating__isnull=False).values_list('agent_rating', flat=True)
+                total_ratings = sum(all_ratings)
+                total_tasks_rated = len(all_ratings)
+                average_rating = total_ratings / total_tasks_rated if total_tasks_rated > 0 else 0
+
+                agent.average_rating = average_rating
+                agent.total_ratings = total_ratings
+                agent.total_tasks_rated = total_tasks_rated
+                agent.save()
+
+                return Response({'detail': 'Rating submitted successfully.'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': 'Errand not found or already rated.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

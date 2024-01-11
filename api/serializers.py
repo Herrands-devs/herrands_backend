@@ -230,3 +230,7 @@ class WalletSerializer(serializers.ModelSerializer):
         model = Wallet
         fields = ['balance', 'timestamp']
 
+class AgentRatingSerializer(serializers.Serializer):
+    errand_id = serializers.UUIDField()
+    user_rating = serializers.IntegerField()
+
