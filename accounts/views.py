@@ -17,6 +17,75 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
+from api.models import ErrandTask, Wallet
+
+class AdminRegisterView(APIView):
+    http_method_names = ['post']
+
+    def post(self, request, *args, **kwargs):
+        try:
+            if not request.user.is_superuser:
+                return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
+
+            serializer = UserSerializer(data=request.data)
+            if serializer.is_valid():
+                user = get_user_model().objects.create_user(**serializer.validated_data)
+                message = 'User created successfully.'
+                serialized_user = UserSerializer(user)  # Serialize the user instance
+                return Response(status=HTTP_201_CREATED, data={'message': message, 'user': serialized_user.data})
+            first_field = next(iter(serializer.errors))
+            first_error = next(iter(serializer.errors.values()))[0]
+            return Response(status=HTTP_400_BAD_REQUEST, data={first_field: first_error})
+        except Exception as e:
+            return Response({'detail': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class AdminPermissionView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            # Check if the user making the request is a superuser
+            if not request.user.is_superuser:
+                return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
+
+            # Extract user_id and permissions from the request data
+            user_id = request.data.get('user_id')
+            print(user_id)
+            permission_codenames = request.data.get('permissions')
+            print(permission_codenames)
+            try:
+                user = get_user_model().objects.get(pk=user_id)
+            except get_user_model().DoesNotExist:
+                return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+            # Set the user's permissions
+            user.user_permissions.clear()
+            for codename in list(permission_codenames):
+                try:
+                    model_name = self.get_model_name(codename)
+                    content_type = ContentType.objects.get_for_model(model_name)
+                    permission = Permission.objects.get(codename=codename , content_type=content_type)
+                except Permission.DoesNotExist:
+                    permission = Permission.objects.create(
+                        codename=codename,
+                        content_type=content_type,
+                        name=codename,
+                    )
+                user.user_permissions.add(permission)
+
+            return Response({'detail': 'Permissions updated successfully.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'detail': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def get_model_name(self,codename):
+        if codename in ['suspend_user', 'delete_user', 'add_new_admin', 'manage_support']:
+            return get_user_model()
+        elif codename in ['delete_errands', 'cancel_errands']:
+            return ErrandTask
+        elif codename in ['cancel_payout', 'delete_payout']:    
+            return Wallet
+        else:
+            return get_user_model()
+
 class CustomPageNumberPagination(PageNumberPagination):
     page_size = 10  # Set the number of items per page
     page_size_query_param = 'page_size'
