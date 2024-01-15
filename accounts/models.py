@@ -62,7 +62,7 @@ class CustomUserManager(BaseUserManager):
 
 
 
-USER_TYPE = (('Agent', 'Agent'), ('Customer', 'Customer'))
+USER_TYPE = (('Admin','Admin'),('Agent', 'Agent'), ('Customer', 'Customer'))
 STATUS = (('Active', 'Active'), ('Suspended', 'Suspended'), ('Banned', 'Banned'), ('Pending', 'Pending'))
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
