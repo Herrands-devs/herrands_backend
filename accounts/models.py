@@ -25,7 +25,9 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('user_type', user_type)
         user = self.model(email=email, **extra_fields)
         #user.set_password(password)
-        if user_type == 'Agent':
+        if user_type == 'Admin':
+            user.is_admin = True
+        elif user_type == 'Agent':
             user.is_agent = True
         elif user_type == 'Customer':
             user.is_customer = True
@@ -68,9 +70,9 @@ class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None
     email = models.EmailField(_('email address'), unique=True)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
-    phone_number = PhoneNumberField(unique=True)
+    first_name = models.CharField(max_length=150, null=True, blank=True)
+    last_name = models.CharField(max_length=150, null=True, blank=True)
+    phone_number = PhoneNumberField(unique=True, null=True, blank=True)
     current_lat = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
     current_long = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
     current_location = models.TextField(max_length=200, null=True, blank=True)
@@ -151,7 +153,6 @@ class Agent(models.Model):
     bank_name = models.CharField(max_length=100)
     account_number = models.CharField(max_length=30)
     beneficiary_name = models.CharField(max_length=30, null=True, blank=True)
-    average_rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     
     
 

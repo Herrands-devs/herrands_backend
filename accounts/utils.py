@@ -20,6 +20,14 @@ def send_otp_email(email, otp):
     recipient_list = [email]
     send_mail(subject, message, from_email, recipient_list)
 
+def send_account_creation_mail(user_id, user_email):
+    admin_account_update_url = f'http://127.0.0.1:8001/accounts/update/admin/{user_id}/'  # need to change the url that redirect to update form to user
+    subject = 'Your admin account is created successfully'
+    message = f'Your admin account is created successfully, Please click on the link {admin_account_update_url} to update the account information and log into your account'
+    from_email = settings.EMAIL_HOST_USER
+    recipient_list = [user_email]
+    send_mail(subject, message, from_email, recipient_list)
+
 '''def send_otp_phone(phone_number, otp):
     try:
         account_sid = 'ACadc78116636051ed92f38403f37aa936'  # Replace with your Twilio account SID
