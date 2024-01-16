@@ -6,7 +6,7 @@ from rest_framework.generics import DestroyAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import *
 from rest_framework import status, generics
-from .utils import generate_otp, send_otp_email, send_otp_phone
+from .utils import generate_otp, send_otp_email, send_otp_phone , send_account_creation_mail
 from .models import User
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
@@ -16,10 +16,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
-
+# ----------------------------------------------------------------------------------
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from api.models import ErrandTask, Wallet
+# ------------------------------------------------------------------------------------
 
 class AdminRegisterView(APIView):
     http_method_names = ['post']
@@ -28,19 +29,42 @@ class AdminRegisterView(APIView):
         try:
             if not request.user.is_superuser:
                 return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
-
-            serializer = UserSerializer(data=request.data)
+            mutable_data = request.data.copy()
+            mutable_data['user_type'] = 'Admin'
+            serializer = UserSerializer(data=mutable_data)
             if serializer.is_valid():
                 user = get_user_model().objects.create_user(**serializer.validated_data)
                 message = 'User created successfully.'
                 serialized_user = UserSerializer(user)  # Serialize the user instance
-                return Response(status=HTTP_201_CREATED, data={'message': message, 'user': serialized_user.data})
+                user_data = serialized_user.data
+                send_account_creation_mail(user_data.get("id"), user_data.get("email"))
+                return Response(status=HTTP_201_CREATED, data={'message': message, 'user': user_data})
             first_field = next(iter(serializer.errors))
             first_error = next(iter(serializer.errors.values()))[0]
             return Response(status=HTTP_400_BAD_REQUEST, data={first_field: first_error})
         except Exception as e:
             return Response({'detail': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+class AdminUpdateView(APIView):
+    http_method_names = ['put']
+
+    def put(self, request, user_id, *args, **kwargs):
+        try:
+            user_instance = get_user_model().objects.get(pk=user_id, user_type='Admin')
+            serializer = UserSerializer(instance=user_instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                message = 'Admin user updated successfully.'
+                serialized_user = UserSerializer(serializer.instance)  # Serialize the updated user instance
+                return Response(data={'message': message, 'user': serialized_user.data})
+
+            # Handle validation errors
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+        except get_user_model().DoesNotExist:
+            return Response({'detail': 'Admin user not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class AdminPermissionView(APIView):
     def post(self, request, *args, **kwargs):
         try:
@@ -112,7 +136,7 @@ class AgentListView(generics.ListAPIView):
 class CustomerListView(generics.ListAPIView):
     queryset = User.objects.filter(user_type='Customer')
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ]
     pagination_class = CustomPageNumberPagination  # Use your custom pagination class
 
     def get(self, request, *args, **kwargs):
@@ -130,7 +154,7 @@ class CustomerListView(generics.ListAPIView):
 
 class UserDeletionView(DestroyAPIView):
     serializer_class = UserDeletionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ]
 
     def get_object(self):
         return self.request.user
@@ -164,7 +188,7 @@ class ValidateOTP(APIView):
     def post(self, request):
         contact = request.data.get('contact', '')
         otp = request.data.get('otp', '')
-
+        print(contact,otp)
         try:
             user = User.objects.get(Q(email=contact) | Q(phone_number=contact))
         except User.DoesNotExist:
@@ -187,6 +211,7 @@ class LoginWithOTP(APIView):
     def post(self, request):
         #email = request.data.get('email', '')
         contact = request.data.get('contact', '')
+        print(contact)
         try:
             user = User.objects.get(Q(email=contact) | Q(phone_number=contact))
         except User.DoesNotExist:
@@ -219,6 +244,7 @@ class RegisterView(APIView):
     http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):
+        print(request.data)
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = get_user_model().objects.create_user(**serializer.validated_data)
@@ -349,4 +375,5 @@ class CustomerDetailsAPIView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'id'
-
+# ----------------------------------------------------------
+    
