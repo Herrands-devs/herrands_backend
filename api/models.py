@@ -134,6 +134,11 @@ class ErrandTask(models.Model):
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     agent_rating = models.IntegerField(null=True, blank=True, choices=RATINGS)
 
+    PAYMENT_MODE = (
+        ('ONLINE','ONLINE'),
+        ('CASH','CASH')
+    )
+    payment_mode = models.CharField(max_length=20, choices=PAYMENT_MODE, blank=True, null=True)
 
     def __str__(self):
         return f'{self.id}'
@@ -215,3 +220,19 @@ def update_wallet_balance(sender, instance, created, **kwargs):
         wallet = instance.wallet
         wallet.balance += instance.amount
         wallet.save()
+# ---------------------------------------------------------------------------------------------------
+class Payments(models.Model):
+    PENDING = 'p'
+    COMPLETED = 'c'
+    FAILED = 'f'
+    PAYMENT_STATUSES = (
+        (PENDING,"Pending"),
+        (COMPLETED,"Complete"),
+        (FAILED,"Failed"),
+    )
+    payment_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    errands = models.ForeignKey(ErrandTask,on_delete=models.CASCADE)
+    payment_status = models.CharField(max_length=100, choices=PAYMENT_STATUSES , default = PENDING)
+    reference_id = models.CharField(max_length=200, blank=True , null=True)
+    transaction_id = models.CharField(max_length=200,  blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)

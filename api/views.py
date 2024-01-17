@@ -1,5 +1,5 @@
 from rest_framework import viewsets, pagination
-from .models import Category, Wallet, Withdrawals, ErrandTask, Subtype, VehicleMetric, DistanceMetric, Conversation, Message
+from .models import Category, Wallet, Withdrawals, ErrandTask, Subtype, VehicleMetric, DistanceMetric, Conversation, Message 
 from .serializers import *
 from rest_framework import generics
 from rest_framework.generics import CreateAPIView,ListAPIView,RetrieveAPIView,UpdateAPIView
@@ -10,17 +10,236 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from django.db.models import Max
 from rest_framework.decorators import api_view
-from .serializers import ConversationListSerializer, ConversationSerializer
+from .serializers import ConversationListSerializer, ConversationSerializer, WithdrawSerializer
 from django.db.models import Q
 from django.shortcuts import redirect, reverse
 from accounts.serializers import *
 from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
+# --------------------------------------------------------------------------------------------
+from django.http import JsonResponse
+import uuid
+import requests
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Payments
 
 
 
+class SelectPaymentMethod(APIView):
+    def post(self, request, id, *args, **kwargs):
+        payment_mode = request.data.get('payment_mode')
 
+        try:
+            errand_task = ErrandTask.objects.get(id=id)
+            errand_task.payment_mode = payment_mode
+            errand_task.save()
+
+            serializer = ErrandTaskSerializer(errand_task)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except ErrandTask.DoesNotExist:
+            return Response({'error': 'Errand Task not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+class MakePayment(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            errand_id = request.data.get('errnad_id')
+            user = self.request.user
+            errand = ErrandTask.objects.get(id=errand_id)
+            total_cost = errand.total_cost
+            try:
+                payment_instance = Payments.objects.create(errands = errand)
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=500)
+            payment_id = payment_instance.payment_id
+            payment_status = self.initiate_payment(total_cost, user.email,str(user.phone_number) , user.first_name, errand_id, payment_id)
+            context = {
+                'errnad_id':errand_id,
+                'total_cost':total_cost,
+                'user_email':user.email,
+                'first_name':user.first_name,
+                'last_name':user.last_name,
+                'payment_status':payment_status
+            }
+            # if payment_status.status == '200':
+            #     pass
+                # payment success message
+                # can connect to the agent
+                # after connecting add this total_cost with 15% minus to agents wallet
+            return JsonResponse( context, safe=False, status=status.HTTP_200_OK)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    def initiate_payment(self,amount, email, phone_number, name, errand_id, payment_id):
+        url = "https://api.flutterwave.com/v3/payments"
+        headers = {
+            "Authorization": f"Bearer {settings.FLW_SEC_KEY}"
+        }
+        
+        data = {
+            "tx_ref": str(uuid.uuid4()),
+            "amount": str(amount), 
+            "currency": "NGN",
+            "redirect_url": f"http:/127.0.0.1:8001/api/errand-initiate-payment/confirm_payment/?errand_id={errand_id}&payment_id={payment_id}",
+            "meta": {
+                "consumer_id": 23,
+                "consumer_mac": "92a3-912ba-1192a"
+            },
+            "customer": {
+                "email": email,
+                "phonenumber": phone_number,
+                "name": name
+            },
+            "customizations": {
+                "title": "Herrands Payments",
+                "logo": "http://www.piedpiper.com/app/themes/joystick-v27/images/logo.png" # this can be change
+            }
+        }
+        
+        try:
+            response = requests.post(url, headers=headers, json=data)
+            response_data = response.json()
+            return response_data
+        except requests.exceptions.RequestException as err:
+            return Response({"error": str(err)}, status=500)
+        
+@csrf_exempt
+def confirm_payment_view(request):
+    if request.method == 'GET':
+        try:
+            # Access the parameters from the URL
+            status = request.GET.get('status')
+            errand_id = request.GET.get('errand_id')
+            tx_ref = request.GET.get('tx_ref')
+            transaction_id = request.GET.get('transaction_id')
+            payment_id = request.GET.get('payment_id')
+
+            payment_instance = Payments.objects.get(payment_id = payment_id)
+            payment_instance.reference_id = tx_ref
+            payment_instance.transaction_id = transaction_id
+            if status == 'successful':
+                payment_instance.payment_status = 'c'
+            elif status == 'cancelled':
+                payment_instance.payment_status = 'f'
+            payment_instance.save()
+
+            response_data = {
+                "status": status,
+                "tx_ref": tx_ref,
+                "transaction_id": transaction_id,
+                "message": "Received and processed the data successfully",
+            }
+            return JsonResponse(response_data)
+        except Payments.DoesNotExist:
+            return JsonResponse({"error": "Payment instance not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": f"An error occurred: {str(e)}"}, status=500)
+    else:
+        return JsonResponse({"error": "Invalid HTTP method"}, status=400)
+
+class WithdrawApi(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        try:
+            #Handled only agent can withdraw
+            if not request.user.is_agent:
+                return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
+            
+            serializer = WithdrawSerializer(data=request.data)
+            if serializer.is_valid():
+                validated_data = serializer.validated_data
+                account_bank = validated_data.get('account_bank')
+                account_number = validated_data.get('account_number')
+                amount = validated_data.get('amount')
+                agent_instance = self.request.user 
+
+                #Calling of transfer method
+                transfer_response = self.transfer(account_bank, account_number, amount, agent_instance.id)
+                return transfer_response
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @csrf_exempt
+    def transfer(self, account_bank, account_number, amount, agent_id):
+        try:
+            agent = get_user_model().objects.get(id=agent_id)
+            wallet_data = Wallet.objects.get(user=agent)
+        except Exception as e:
+            return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        flutterwave_transfer_url = 'https://api.flutterwave.com/v3/transfers'
+        # Check if the agent has sufficient balance
+        if wallet_data.balance < amount:
+            return JsonResponse({'success': False, 'message': 'Insufficient balance'})
+
+        # Initiate transfer with Flutterwave
+        headers = {'Authorization': f'Bearer {settings.FLW_SEC_KEY}'}
+        payload = {
+            "account_bank":account_bank,
+            "account_number":account_number,
+            "amount": amount,
+            "narration": "Payment for agent's withdraw",
+            "currency": "NGN",
+            # "reference": "akhlm-pstmnpyt-rfxx007_PMCKDU_1",
+            # "callback_url": "https://www.flutterwave.com/ng/",
+            "debit_currency": "NGN"
+        }
+        try:
+            response = requests.post(flutterwave_transfer_url, json=payload, headers=headers)
+            response_data = response.json()
+
+            # Check if the transfer was successful
+            if response_data['status'] == 'success':
+                
+                self.create_withdraw_history(response_data.get('data'),wallet_data.user)
+                # Update agent and admin balances
+                wallet_data.balance -= amount
+                wallet_data.save()
+                #update withdraw history
+                return JsonResponse({'success': True, 'message': 'Transfer successful','data':response_data }, status=200)
+            
+            return JsonResponse({'success': False, 'message': 'Transfer failed'}, status=500)
+        
+        except Exception as e:
+            return JsonResponse({'success': False,'error':str(e) ,'message': 'Internal server error'}, status=500)
+    
+    def create_withdraw_history(self,response_data,user):
+        try:
+            wallet_instance = Wallet.objects.get(user=user)
+            bank_code = str(response_data.get('bank_code'))
+            bank_account_number = int(response_data.get('account_number'))
+            beneficiary_name = response_data.get('full_name')
+            amount = response_data.get('amount')
+            Withdrawals.objects.create(
+                wallet=wallet_instance,
+                bank_name=bank_code,
+                bank_account_number=bank_account_number,
+                beneficiary_name=beneficiary_name,
+                amount=100
+            )
+        except Exception as e:
+            print('failled _to_create_withdraw_history',str(e))
+
+class WithdrawalHistoryView(APIView):
+    permission_classes = [permissions.IsAuthenticated] 
+
+    def get(self,request, *args, **kwargs):
+        try:
+            user = self.request.user
+            wallet = Wallet.objects.get(user=user)
+            withdraw_list = Withdrawals.objects.filter(wallet=wallet).values()
+            return Response({"data": withdraw_list}, status=200)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': 'Internal server error'}, status=500)
+        
+
+# --------------------------------------------------------------------------------------------
 """class UserErrandTaskViewSet(viewsets.ModelViewSet):
     queryset = ErrandTask.objects.all()
     serializer_class = ErrandTaskSerializer
