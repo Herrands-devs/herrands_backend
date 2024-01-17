@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from accounts.serializers import UserSerializer
-from .models import Category, Earnings, Wallet, Subtype, File, ErrandTask, VehicleMetric, DistanceMetric, Conversation, Message
+from .models import AgentRatings, Category, Earnings, Wallet, Subtype, File, ErrandTask, VehicleMetric, DistanceMetric, Conversation, Message
 import base64
 from django.core.files.base import ContentFile
 from rest_framework.exceptions import APIException
@@ -10,6 +10,12 @@ from math import radians, sin, cos, sqrt, atan2
 from decimal import Decimal
 import math
 
+class WithdrawSerializer(serializers.Serializer):
+    account_bank = serializers.CharField(max_length=3, required=True)
+    account_number = serializers.CharField(max_length=10, required=True)
+    amount = serializers.IntegerField(min_value=1, required=True)
+
+    
 def calculate_distance(lat1, lon1, lat2, lon2):
     lat1_rad = math.radians(float(lat1))
     lon1_rad = math.radians(float(lon1))

@@ -1,6 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CategoryViewSet,AdminTopAgentsView, AgentRatingView, AllSubtypesViewSet, WithdrawalView, AdminErrandsComparisonView, AdminTopCustomersView, AdminErrandTaskViewSet, CustomerConversationsView, AgentConversationsView, EarningsListView, WalletView, ConversationListAPIView, ErrandTaskViewSet, UserErrandTaskViewSet, UserCompletedErrandTaskViewSet, CreateErrandView, SubtypeViewSet, VehicleMetricViewSet, DistanceMetricViewSet
+from .views import( AgentRatingView,SelectPaymentMethod,WithdrawApi,confirm_payment_view,MakePayment, CategoryViewSet,AdminTopAgentsView,
+                    WithdrawalView, AdminErrandsComparisonView, AdminTopCustomersView, AdminErrandTaskViewSet,
+                    CustomerConversationsView, AgentConversationsView, EarningsListView, WalletView,
+                    ConversationListAPIView, ErrandTaskViewSet, UserErrandTaskViewSet, UserCompletedErrandTaskViewSet,
+                    CreateErrandView, SubtypeViewSet, VehicleMetricViewSet, DistanceMetricViewSet,
+                    WithdrawalHistoryView , AllSubtypesViewSet)
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
@@ -35,6 +40,13 @@ urlpatterns = [
     path('top-agents/', AdminTopAgentsView.as_view(), name='top-agents'),
     path('errands-dashboard/', AdminErrandsComparisonView.as_view(), name='errands-comparison'),
     path('rate-agent/', AgentRatingView.as_view(), name='rate-agent'),
+    # -----------------
+    path('select-payment-method/<uuid:id>/', SelectPaymentMethod.as_view(), name='select_payment_method'),
+    path('errand-initiate-payment/', MakePayment.as_view(), name='errand-pay'),
+    path('errand-initiate-payment/confirm_payment/', confirm_payment_view, name='confirm_payment'),
+    path('withdraw/', WithdrawApi.as_view(), name='withdraw'),
+    path('withdraw-history-list/', WithdrawalHistoryView.as_view(), name='withdraw_history')
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
