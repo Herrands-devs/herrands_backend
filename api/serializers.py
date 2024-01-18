@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from accounts.serializers import UserSerializer
-from .models import AgentRatings, Category, Earnings, Wallet, Subtype, File, ErrandTask, VehicleMetric, DistanceMetric, Conversation, Message
+from .models import Category, Earnings, Wallet, Subtype, File, ErrandTask, VehicleMetric, DistanceMetric, Conversation, Message
 import base64
 from django.core.files.base import ContentFile
 from rest_framework.exceptions import APIException
