@@ -25,7 +25,9 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Payments
-
+from dotenv import load_dotenv
+load_dotenv()
+import os
 
 
 class SelectPaymentMethod(APIView):
@@ -76,8 +78,9 @@ class MakePayment(APIView):
     
     def initiate_payment(self,amount, email, phone_number, name, errand_id, payment_id):
         url = "https://api.flutterwave.com/v3/payments"
+        flw_sec_key = os.environ.get("FLW_SEC_KEY")
         headers = {
-            "Authorization": f"Bearer {settings.FLW_SEC_KEY}"
+            "Authorization": f"Bearer {flw_sec_key}"
         }
         
         data = {
@@ -179,7 +182,8 @@ class WithdrawApi(APIView):
             return JsonResponse({'success': False, 'message': 'Insufficient balance'})
 
         # Initiate transfer with Flutterwave
-        headers = {'Authorization': f'Bearer {settings.FLW_SEC_KEY}'}
+        flw_sec_key = os.environ.get("FLW_SEC_KEY")
+        headers = {'Authorization': f'Bearer {flw_sec_key}'}
         payload = {
             "account_bank":account_bank,
             "account_number":account_number,
