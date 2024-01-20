@@ -203,4 +203,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 CSRF_TRUSTED_ORIGINS = ['https://herrand-backend-5a39ee15054e.herokuapp.com', 'https://jellyfish-app-gd9q8.ondigitalocean.app']
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+EMAIL_HOST_USER = 'admin@herrands.com'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_HOST = 'mail.herrands.com'
+EMAIL_HOST_PASSWORD = 'ukxjJU##$!A$$CfK'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True

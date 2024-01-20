@@ -23,7 +23,7 @@ class FileAdmin(admin.ModelAdmin):
 class ErrandTaskAdmin(admin.ModelAdmin):
     list_display = ['id', 'category', 'subtype', 'drop_off_address', 'status']
     list_filter = ['category', 'subtype', 'status']
-    search_fields = ['id', 'drop_off_address', 'customer__username', 'agent__username']
+    search_fields = ['id', 'drop_off_address', 'customer__email', 'agent__email']
     date_hierarchy = 'created'
     readonly_fields = ('id', 'created', 'updated')
     filter_horizontal = ('rejected_agents', 'files')
