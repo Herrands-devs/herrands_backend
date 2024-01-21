@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 from .views import (EmailTokenObtainPairView, AgentDetailsAPIView, CustomerDetailsAPIView, AgentListView, CustomerListView,
                      PreferencesDetailView, AgentDataView, UserDeletionView, RegisterView, LoginWithOTP, ValidateOTP,
                        UserDetailView, update_agent_data, AgentRegisterView, AgentUpdateView, ServicesListView, IdtypeListView,
-                       PreferencesListView , AdminPermissionView , AdminRegisterView , AdminUpdateView )
+                       PreferencesListView , AdminPermissionView , AdminRegisterView , AdminUpdateView, UpdateUserView )
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='token_obtain_pair'),
@@ -31,6 +31,7 @@ urlpatterns = [
     path('register/admin/',AdminRegisterView.as_view(), name='register-admin'),
     path('update/admin/<uuid:user_id>/', AdminUpdateView.as_view(), name='update-admin'),
     path('manage-admin-permissions/', AdminPermissionView.as_view(), name='manage-admin-perm'),
+    path('update-user/', UpdateUserView.as_view(), name='update_admin'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,

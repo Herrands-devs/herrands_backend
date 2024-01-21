@@ -103,6 +103,11 @@ class UserSerializer(serializers.ModelSerializer):
 
         return data
 
+class AgentUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ['first_name', 'last_name', 'phone_number']
+
 class User2Serializer(serializers.ModelSerializer):
     num_errands = serializers.IntegerField(source='errands_count', read_only=True)
     class Meta:

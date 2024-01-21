@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
-from rest_framework.generics import DestroyAPIView
+from rest_framework.generics import DestroyAPIView, UpdateAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import *
 from rest_framework import status, generics
@@ -20,6 +20,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from api.models import ErrandTask, Wallet
+
 # ------------------------------------------------------------------------------------
 
 class AdminRegisterView(APIView):
@@ -65,6 +66,13 @@ class AdminUpdateView(APIView):
         except Exception as e:
             return Response({'detail': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class UpdateUserView(UpdateAPIView):
+    serializer_class = AgentUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+    
 class AdminPermissionView(APIView):
     def post(self, request, *args, **kwargs):
         try:
@@ -228,7 +236,7 @@ class LoginWithOTP(APIView):
         user.save()
         print(user.otp)
 
-        #send_otp_email(email, otp)
+        send_otp_email(contact, otp)
         # send_otp_phone(phone_number, otp)
         '''if re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', contact):
             # Send OTP via email
