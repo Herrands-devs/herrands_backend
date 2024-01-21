@@ -18,7 +18,7 @@ def send_otp_email(email, otp):
     message = f'Your OTP is: {otp}'
     from_email = settings.EMAIL_HOST_USER
     recipient_list = [email]
-    send_mail(subject, message, from_email, recipient_list)
+    send_mail(subject, message, from_email, recipient_list, fail_silently=True)
 
 def send_account_creation_mail(user_id, user_email):
     admin_account_update_url = f'http://127.0.0.1:8000/accounts/update/admin/{user_id}/'  # need to change the url that redirect to update form to user

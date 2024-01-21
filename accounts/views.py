@@ -202,7 +202,7 @@ class ValidateOTP(APIView):
         except User.DoesNotExist:
             return Response({'error': 'User with credentials does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
-        if otp=="1234":
+        if otp==user.otp:
             user.otp = None  # Reset the OTP field after successful validation
             user.save()
 
@@ -237,6 +237,7 @@ class LoginWithOTP(APIView):
         print(user.otp)
 
         send_otp_email(contact, otp)
+        print('sent')
         # send_otp_phone(phone_number, otp)
         '''if re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', contact):
             # Send OTP via email
