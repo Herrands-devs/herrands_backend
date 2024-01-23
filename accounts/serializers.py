@@ -123,12 +123,11 @@ class AgentSerializer(serializers.ModelSerializer):
     preference = serializers.PrimaryKeyRelatedField(queryset=Preferences.objects.all())
     services = serializers.PrimaryKeyRelatedField(many=True, queryset=Services.objects.all())
     id_type = serializers.PrimaryKeyRelatedField(queryset=Idtype.objects.all())
-    id_file  = Base64FileField()
 
     class Meta:
         model = Agent
         exclude = ['country']
-        read_only_fields = ('id', 'photo', 'pay_per_hour', 'arrival_speed', 'delivery_speed', 'bank_name', 'account_number', 'beneficiary_name')
+        read_only_fields = ('id', 'photo', 'id_file', 'pay_per_hour', 'arrival_speed', 'delivery_speed', 'bank_name', 'account_number', 'beneficiary_name')
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         services = validated_data.pop('services', [])
