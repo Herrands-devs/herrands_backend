@@ -24,7 +24,7 @@ import requests
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Payments
+from .models import Payment as Payments
 from dotenv import load_dotenv
 load_dotenv()
 import os

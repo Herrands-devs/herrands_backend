@@ -138,7 +138,7 @@ class ErrandTask(models.Model):
         ('ONLINE','ONLINE'),
         ('CASH','CASH')
     )
-    payment_mode = models.CharField(max_length=20, choices=PAYMENT_MODE, blank=True, null=True)
+    #payment_mode = models.CharField(max_length=20, choices=PAYMENT_MODE, blank=True, null=True)
 
     def __str__(self):
         return f'{self.id}'
@@ -221,7 +221,7 @@ def update_wallet_balance(sender, instance, created, **kwargs):
         wallet.balance += instance.amount
         wallet.save()
 # ---------------------------------------------------------------------------------------------------
-class Payments(models.Model):
+class Payment(models.Model):
     PENDING = 'p'
     COMPLETED = 'c'
     FAILED = 'f'
