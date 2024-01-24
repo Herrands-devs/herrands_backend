@@ -20,8 +20,66 @@ from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from api.models import ErrandTask, Wallet
-
+from datetime import datetime, timedelta
+import json
 # ------------------------------------------------------------------------------------
+
+class ActionsOnUser(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request,user_id, *args, **kwargs):
+        try:
+            print(user_id)
+            action = request.data.get('action')
+            user_instance = User.objects.get(id=user_id)
+            user_instance.status = action
+            user_instance.save()
+            return Response({'detail':f'{user_instance.email} {action} successfully'}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'detail': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class UserStatsView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        current_month = datetime.now().replace(day=1)
+        last_month = current_month - timedelta(days=1)
+        try:
+            current_month_agent_count = User.objects.filter(
+                user_type='Agent',
+                date_joined__year=current_month.year,
+                date_joined__month=current_month.month
+            ).count()
+            last_month_agent_count = User.objects.filter(
+                user_type='Agent',
+                date_joined__year=last_month.year,
+                date_joined__month=last_month.month
+            ).count()
+            current_month_customer_count = User.objects.filter(
+                user_type='Customer',
+                date_joined__year=current_month.year,
+                date_joined__month=current_month.month
+            ).count()
+            last_month_customer_count = User.objects.filter(
+                user_type='Customer',
+                date_joined__year=last_month.year,
+                date_joined__month=last_month.month
+            ).count()
+            print(current_month_agent_count,last_month_agent_count,current_month_customer_count,last_month_customer_count)
+            agent_percentage_change = ((current_month_agent_count - last_month_agent_count) / last_month_agent_count) * 100
+            customer_percentage_change = ((current_month_customer_count - last_month_customer_count) / last_month_customer_count) * 100
+
+        except ZeroDivisionError:
+            customer_percentage_change = 0
+            agent_percentage_change = 0
+
+        context = {
+            'current_month_agent_count': current_month_agent_count,
+            'agent_percentage_change': round(agent_percentage_change, 2),
+            'current_month_customer_count': current_month_customer_count,
+            'customer_percentage_change': round(customer_percentage_change, 2)
+        }
+        return Response(context, status=status.HTTP_200_OK)
+
 
 class AdminRegisterView(APIView):
     http_method_names = ['post']
@@ -122,6 +180,24 @@ class CustomPageNumberPagination(PageNumberPagination):
     page_size = 10  # Set the number of items per page
     page_size_query_param = 'page_size'
     max_page_size = 100
+
+class AdminListView(generics.ListAPIView):
+    queryset = User.objects.filter(user_type='Admin')
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated, ]
+    pagination_class = CustomPageNumberPagination  
+
+    def get(self, request, *args, **kwargs):
+
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 class AgentListView(generics.ListAPIView):
     queryset = Agent.objects.all()

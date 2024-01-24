@@ -28,7 +28,42 @@ from .models import Payments
 from dotenv import load_dotenv
 load_dotenv()
 import os
+from datetime import datetime, timedelta
 
+class PaymentListView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        try:
+            payment_data = list(Payments.objects.all().values())
+            return Response({'payment_data':payment_data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+class ErrandStatsView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        current_month = datetime.now().replace(day=1)
+        last_month = current_month - timedelta(days=1)
+        try:
+            current_month_errand_count = ErrandTask.objects.filter(
+                created__year=current_month.year,
+                created__month=current_month.month
+            ).count()
+            last_month_errand_count = ErrandTask.objects.filter(
+                created__year=last_month.year,
+                created__month=last_month.month
+            ).count()
+            print(current_month_errand_count,last_month_errand_count)
+            errand_percentage_change = ((current_month_errand_count - last_month_errand_count) / last_month_errand_count) * 100
+            print(errand_percentage_change)
+        except ZeroDivisionError:
+            errand_percentage_change = 0
+
+        context = {
+            'current_month_errand_count': current_month_errand_count,
+            'errand_percentage_change': round(errand_percentage_change, 2)
+        }
+        return Response(context, status=status.HTTP_200_OK)
 
 class SelectPaymentMethod(APIView):
     def post(self, request, id, *args, **kwargs):
@@ -49,7 +84,7 @@ class SelectPaymentMethod(APIView):
 class MakePayment(APIView):
     def post(self, request, *args, **kwargs):
         try:
-            errand_id = request.data.get('errnad_id')
+            errand_id = request.data.get('errand_id')
             user = self.request.user
             errand = ErrandTask.objects.get(id=errand_id)
             total_cost = errand.total_cost
@@ -65,14 +100,14 @@ class MakePayment(APIView):
                 'user_email':user.email,
                 'first_name':user.first_name,
                 'last_name':user.last_name,
-                'payment_status':payment_status
             }
-            # if payment_status.status == '200':
-            #     pass
-                # payment success message
-                # can connect to the agent
-                # after connecting add this total_cost with 15% minus to agents wallet
-            return JsonResponse( context, safe=False, status=status.HTTP_200_OK)
+            current_payment_status = payment_status.get('status')
+            if current_payment_status == 'success':
+                context['payment_status'] = payment_status
+                return Response(context, status=status.HTTP_200_OK)
+            else:
+                return Response(payment_status, status=500)
+            
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     
@@ -80,7 +115,8 @@ class MakePayment(APIView):
         url = "https://api.flutterwave.com/v3/payments"
         flw_sec_key = os.environ.get("FLW_SEC_KEY")
         headers = {
-            "Authorization": f"Bearer {flw_sec_key}"
+            "Authorization": f"Bearer {flw_secret_key}",
+            "Content-Type": "application/json"
         }
         
         data = {
@@ -103,12 +139,11 @@ class MakePayment(APIView):
             }
         }
         
-        try:
-            response = requests.post(url, headers=headers, json=data)
-            response_data = response.json()
-            return response_data
-        except requests.exceptions.RequestException as err:
-            return Response({"error": str(err)}, status=500)
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code // 100 == 2:
+            return response.json()
+        else:
+            return Response({"error":"Unable to make payment"}, status=response.status_code)
         
 @csrf_exempt
 def confirm_payment_view(request):
@@ -199,7 +234,7 @@ class WithdrawApi(APIView):
             response_data = response.json()
 
             # Check if the transfer was successful
-            if response_data['status'] == 'success':
+            if response.status_code == 200:
                 
                 self.create_withdraw_history(response_data.get('data'),wallet_data.user)
                 # Update agent and admin balances
@@ -208,7 +243,7 @@ class WithdrawApi(APIView):
                 #update withdraw history
                 return JsonResponse({'success': True, 'message': 'Transfer successful','data':response_data }, status=200)
             
-            return JsonResponse({'success': False, 'message': 'Transfer failed'}, status=500)
+            return JsonResponse({'success': False,'error':response_data, 'message': 'Transfer failed'}, status=500)
         
         except Exception as e:
             return JsonResponse({'success': False,'error':str(e) ,'message': 'Internal server error'}, status=500)
