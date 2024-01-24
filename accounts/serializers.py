@@ -127,7 +127,7 @@ class AgentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
         exclude = ['country']
-        read_only_fields = ('id', 'photo', 'id_file', 'pay_per_hour', 'arrival_speed', 'delivery_speed', 'bank_name', 'account_number', 'beneficiary_name')
+        read_only_fields = ('id', 'photo', 'pay_per_hour', 'arrival_speed', 'delivery_speed', 'bank_name', 'account_number', 'beneficiary_name')
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         services = validated_data.pop('services', [])
