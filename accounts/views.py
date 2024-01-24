@@ -111,7 +111,9 @@ class AdminUpdateView(APIView):
         try:
             user_instance = get_user_model().objects.get(pk=user_id, user_type='Admin')
             serializer = UserSerializer(instance=user_instance, data=request.data, partial=True)
+            user_instance = self.get_object()
             if serializer.is_valid():
+                user_instance.set_password(serializer.validated_data['password'])
                 serializer.save()
                 message = 'Admin user updated successfully.'
                 serialized_user = UserSerializer(serializer.instance)  # Serialize the updated user instance
