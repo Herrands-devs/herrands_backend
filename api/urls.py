@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import(PaymentListView,ErrandStatsView, AgentRatingView,SelectPaymentMethod,WithdrawApi,confirm_payment_view,MakePayment, CategoryViewSet,AdminTopAgentsView,
+from .views import(CancelErrandsView, PaymentListView,ErrandStatsView, AgentRatingView,SelectPaymentMethod,WithdrawApi,confirm_payment_view,MakePayment, CategoryViewSet,AdminTopAgentsView,
                     WithdrawalView, AdminErrandsComparisonView, AdminTopCustomersView, AdminErrandTaskViewSet,
                     CustomerConversationsView, AgentConversationsView, EarningsListView, WalletView,
                     ConversationListAPIView, ErrandTaskViewSet, UserErrandTaskViewSet, UserCompletedErrandTaskViewSet,
@@ -48,6 +48,7 @@ urlpatterns = [
     path('withdraw-history-list/', WithdrawalHistoryView.as_view(), name='withdraw_history'),
     path('errand-monthly-state/', ErrandStatsView.as_view(), name='errand_state'),
     path('payment-list/', PaymentListView.as_view(), name='payment_list'),
+    path('cancel-errand/<uuid:errand_id>/', CancelErrandsView.as_view(), name='cancel_errand'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,

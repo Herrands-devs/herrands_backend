@@ -57,6 +57,7 @@ class ErrandTask(models.Model):
     IN_PROGRESS = 'IN_PROGRESS'
     COMPLETED = 'COMPLETED'
     PICKED_UP = 'PICKED_UP'
+    CANCELLED = 'CANCELLED'
     MONTHS= 'MONTHS'
     DAYS = 'DAYS'
     HOURS = 'HOURS'
@@ -68,7 +69,8 @@ class ErrandTask(models.Model):
         (STARTED, STARTED),
         (IN_PROGRESS, IN_PROGRESS),
         (COMPLETED, COMPLETED),
-        (PICKED_UP, PICKED_UP)
+        (PICKED_UP, PICKED_UP),
+        (CANCELLED,CANCELLED)
     )
     TIME_CAP = (
         (HOURS, HOURS),

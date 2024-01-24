@@ -30,6 +30,21 @@ load_dotenv()
 import os
 from datetime import datetime, timedelta
 
+
+
+class CancelErrandsView(APIView):
+    http_method_names = ['post']
+
+    def post(self, request, errand_id,*args, **kwargs):
+        try:
+            errand_instance = ErrandTask.objects.get(id=errand_id)
+        except Exception as e:
+            return Response({"error": "Not Exist"}, status=status.HTTP_404_NOT_FOUND)
+        
+        errand_instance.status = 'CANCELLED'
+        errand_instance.save()
+        return Response({"message": "Errand successfully cancelled" }, status=status.HTTP_200_OK)
+
 class PaymentListView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
