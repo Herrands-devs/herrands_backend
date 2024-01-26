@@ -133,7 +133,7 @@ class ErrandTaskSerializer(serializers.ModelSerializer):
             total_cost = Decimal(str(vehicle_instance.cost)) * Decimal(str(distance_in_km))
             print(total_cost)
         
-        elif vehicle_type.id == 5:
+        elif subtype_data == 4 or subtype_data ==5:
             how_long = validated_data_copy.pop('how_long')
             time_cap = validated_data_copy.pop('time_cap')
             total_sum = ""
