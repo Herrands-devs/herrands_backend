@@ -71,7 +71,7 @@ class TokenObtainPairSerializer(JwtTokenObtainPairSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ('id', 'email', 'first_name', 'last_name', 'phone_number', 'user_type', 'status', 'account_completed')
+        fields = ('id', 'email', 'first_name', 'last_name', 'phone_number', 'user_type', 'status', 'account_completed', 'password')
         read_only_fields = ('id', 'account_completed', 'status')
         extra_kwargs = {'password': {'write_only': True}}
     def validate_email(self, value):

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
+from django.contrib.auth.hashers import make_password
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from rest_framework.generics import DestroyAPIView, UpdateAPIView
@@ -16,6 +17,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import status, generics, viewsets, pagination
 # ----------------------------------------------------------------------------------
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -23,6 +25,8 @@ from api.models import ErrandTask, Wallet
 from datetime import datetime, timedelta
 import json
 # ------------------------------------------------------------------------------------
+
+User = get_user_model()
 
 class ActionsOnUser(APIView):
     permission_classes = [IsAuthenticated]
@@ -111,10 +115,10 @@ class AdminUpdateView(APIView):
         try:
             user_instance = get_user_model().objects.get(pk=user_id, user_type='Admin')
             serializer = UserSerializer(instance=user_instance, data=request.data, partial=True)
-            user_instance = self.get_object()
+            #user_instance = self.get_object()
             if serializer.is_valid():
-                user_instance.set_password(serializer.validated_data['password'])
-                serializer.save()
+                user_password = make_password(serializer.validated_data['password'])
+                serializer.save(password=user_password)
                 message = 'Admin user updated successfully.'
                 serialized_user = UserSerializer(serializer.instance)  # Serialize the updated user instance
                 return Response(data={'message': message, 'user': serialized_user.data})
@@ -125,6 +129,39 @@ class AdminUpdateView(APIView):
             return Response({'detail': 'Admin user not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'detail': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+'''class AgentUpdateView(viewsets.ModelViewSet):
+    queryset =  User.objects.all()
+    serializer_class = UserSerializer
+
+    @action(detail=True, methods=['PATCH'])
+    def update_farmer_number(self, request, pk=None):
+        farmer_instance = self.get_object()
+        serializer = FarmerUpdateSerializerOne(farmer_instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message":"Phone number added successfully", "data": serializer.data})
+        return Response(serializer.errors, status=400)
+
+    @action(detail=True, methods=['PATCH'])
+    def update_farmer_photo(self, request, pk=None):
+        farmer_instance = self.get_object()
+        serializer = FarmerUpdateSerializerTwo(farmer_instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message":"Photo added successfully", "data": serializer.data})
+        return Response(serializer.errors, status=400)
+
+    @action(detail=True, methods=['PATCH'])
+    def update_password(self, request, pk=None):
+        farmer_instance = self.get_object()
+        serializer = FarmerUpdateSerializerThree(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            # Set the new password
+            farmer_instance.set_password(serializer.validated_data['password'])
+            farmer_instance.save()
+            return Response({"message": "Password updated successfully"})
+        return Response(serializer.errors, status=400)'''
 
 class UpdateUserView(UpdateAPIView):
     serializer_class = AgentUpdateSerializer

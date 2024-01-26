@@ -140,7 +140,7 @@ class ErrandTask(models.Model):
         ('ONLINE','ONLINE'),
         ('CASH','CASH')
     )
-    #payment_mode = models.CharField(max_length=20, choices=PAYMENT_MODE, blank=True, null=True)
+    payment_mode = models.CharField(max_length=20, choices=PAYMENT_MODE, blank=True, null=True)
 
     def __str__(self):
         return f'{self.id}'

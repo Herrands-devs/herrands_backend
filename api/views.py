@@ -232,7 +232,7 @@ class WithdrawApi(APIView):
             return JsonResponse({'success': False, 'message': 'Insufficient balance'})
 
         # Initiate transfer with Flutterwave
-        flw_sec_key = os.environ.get("FLW_SEC_KEY")
+        flw_sec_key = "FLWSECK_TEST-fa9f76dea9dd1ae5f29784bc4bbfee46-X"
         headers = {'Authorization': f'Bearer {flw_sec_key}'}
         payload = {
             "account_bank":account_bank,

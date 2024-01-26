@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Subtype, File, ErrandTask, Conversation, Message, Earnings
+from .models import Category, Subtype, File, ErrandTask, Conversation, Message, Earnings, Wallet
 
 # Define custom admin classes if needed
 
@@ -79,5 +79,11 @@ class EarningsAdmin(admin.ModelAdmin):
     list_filter = ('wallet__user__email', 'timestamp')
     search_fields = ('wallet__user__email', 'amount')
     date_hierarchy = 'timestamp'
+
+@admin.register(Wallet)
+class WalletAdmin(admin.ModelAdmin):
+    list_display = ('user', 'balance', 'timestamp')
+    search_fields = ('user__email',)  # Add other fields for searching if needed
+    list_filter = ('timestamp',) 
 
 admin.site.register(Earnings, EarningsAdmin)

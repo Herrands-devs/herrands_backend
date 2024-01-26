@@ -545,6 +545,9 @@ class ErrandConsumer(AsyncJsonWebsocketConsumer):
             return
             
         if errand.status == 'ACCEPTED':
+            '''vehicle_metric = VehicleMetric.objects.get(id=errand.vehicle_type.id)
+            cost_per_km = vehicle_metric.cost'''
+            
             rejecting_agent = self.scope['user']
                 # Add driver to the trip group.
             await self.channel_layer.group_add(

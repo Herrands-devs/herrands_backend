@@ -116,11 +116,12 @@ class ErrandTaskSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         category_data = validated_data.pop('category')
         subtype_data = validated_data.pop('subtype')
+        validated_data_copy = validated_data.copy()
+        vehicle_type = validated_data_copy.pop('vehicle_type')
         # Handle the case where 'files' is not provided or is an empty list
         total_cost = 0
         distance_in_km = 0
-        if subtype_data == 9:
-            validated_data_copy = validated_data.copy()
+        if category_data == 1:
             lat_1 = validated_data_copy.pop('pick_up_lat')
             long_1 = validated_data_copy.pop('pick_up_long')
             lat_2 = validated_data_copy.pop('drop_off_lat')
@@ -131,6 +132,21 @@ class ErrandTaskSerializer(serializers.ModelSerializer):
             vehicle_instance = VehicleMetric.objects.get(id=vehicle_type.id)
             total_cost = Decimal(str(vehicle_instance.cost)) * Decimal(str(distance_in_km))
             print(total_cost)
+        
+        elif vehicle_type.id == 5:
+            how_long = validated_data_copy.pop('how_long')
+            time_cap = validated_data_copy.pop('time_cap')
+            total_sum = ""
+            if time_cap == "HOURS":
+                total_sum = how_long * 2000
+            elif time_cap =="MINUTES":
+                total_sum = (how_long/60) *2000
+            else:
+                total_sum = (how_long/3600) *2000
+            total_cost = total_sum
+            
+
+            
 
         
 
@@ -140,6 +156,8 @@ class ErrandTaskSerializer(serializers.ModelSerializer):
         else:
             files_data = validated_data.pop('files')
             files = [File.objects.create(**file_data) for file_data in files_data]
+        print(total_cost)
+        #print(total_dis)
 
         errand_task = ErrandTask.objects.create(category=category_data, subtype=subtype_data, distance_in_km = distance_in_km, total_cost=total_cost, **validated_data)
         if files:
