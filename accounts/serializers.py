@@ -71,6 +71,42 @@ class TokenObtainPairSerializer(JwtTokenObtainPairSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
+        fields = ('id', 'email', 'first_name', 'last_name', 'phone_number', 'user_type', 'status', 'account_completed')
+        read_only_fields = ('id', 'account_completed', 'status')
+        extra_kwargs = {'password': {'write_only': True}}
+    def validate_email(self, value):
+        if not value:
+            raise serializers.ValidationError("Email is required.")
+        return value
+
+    def validate_first_name(self, value):
+        if not value:
+            raise serializers.ValidationError("First name is required.")
+        return value
+
+    def validate_last_name(self, value):
+        if not value:
+            raise serializers.ValidationError("Last name is required.")
+        return value
+
+    def validate_phone_number(self, value):
+        if not value:
+            raise serializers.ValidationError("Phone number is required.")
+        return value
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        user_type = instance.user_type
+
+        if 'agent_representation' in self.context and user_type == 'Agent':
+            agent_data = AgentSerializer(instance.agent).data
+            data['agent'] = agent_data
+
+        return data
+    
+class UserSerializer2(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
         fields = ('id', 'email', 'first_name', 'last_name', 'phone_number', 'user_type', 'status', 'account_completed', 'password')
         read_only_fields = ('id', 'account_completed', 'status')
         extra_kwargs = {'password': {'write_only': True}}
