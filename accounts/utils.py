@@ -21,7 +21,7 @@ def send_otp_email(email, otp):
     send_mail(subject, message, from_email, recipient_list, fail_silently=True)
 
 def send_account_creation_mail(user_id, user_email):
-    admin_account_update_url = f'https://herrands-mu.vercel.app/setpass?id={user_id}'  # need to change the url that redirect to update form to user
+    admin_account_update_url = f'https://jellyfish-app-gd9q8.ondigitalocean.app/accounts/token/obtain/?id={user_id}'  # need to change the url that redirect to update form to user
     subject = 'Your admin account is created successfully'
     message = f'Your admin account is created successfully, Please click on the link {admin_account_update_url} to update the account information and log into your account'
     from_email = settings.EMAIL_HOST_USER
