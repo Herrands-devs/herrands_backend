@@ -28,6 +28,34 @@ import json
 
 User = get_user_model()
 
+class LoginWithContact(APIView):
+    def post(self, request):
+        email = request.data.get('email', '')
+        password = request.data.get('password', '')
+
+        try:
+            #user = User.objects.get(Q(email=contact) | Q(phone_number=contact))
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'User with credentials does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+        if not user.is_staff:
+            return Response({'error':'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+        if user.check_password(password):
+            #user.otp = None  # Reset the OTP field after successful validation
+            #user.save()
+            
+
+            # Generate a new JWT token
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            
+            #user_obj = Farmer.objects.get(email=user.email)
+            user_seri = UserSerializer(user)
+           
+            return Response({'token': access_token, 'user': user_seri.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Invalid Password.'}, status=status.HTTP_400_BAD_REQUEST)
+
 class ActionsOnUser(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request,user_id, *args, **kwargs):

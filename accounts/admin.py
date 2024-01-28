@@ -8,7 +8,7 @@ from .models import User, Preferences, Services, Idtype, Agent
 
 class CustomUserAdmin(BaseUserAdmin):
     ordering = ['id']
-    list_display = ['email', 'first_name', 'last_name', 'phone_number', 'user_type', 'otp', 'account_completed', 'is_staff', 'is_active']
+    list_display = ['email', 'first_name', 'last_name', 'phone_number', 'user_type', 'otp', 'account_completed', 'is_staff', 'is_active', 'is_superuser']
 
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
