@@ -38,7 +38,7 @@ class LoginWithContact(APIView):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response({'error': 'User with credentials does not exist.'}, status=status.HTTP_404_NOT_FOUND)
-        if user.user_type !='admin':
+        if user.user_type !='admin' or user.user_type !='Admin':
             return Response({'error':'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         if user.check_password(password):
             #user.otp = None  # Reset the OTP field after successful validation
