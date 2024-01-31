@@ -10,7 +10,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Subtype)
 class SubtypeAdmin(admin.ModelAdmin):
-    list_display = ['id','name', 'category']
+    list_display = ['id','name', 'category', 'description']
     list_filter = ['category']
     search_fields = ['name', 'category__name']
 
