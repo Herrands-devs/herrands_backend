@@ -6,7 +6,7 @@ from .views import (EmailTokenObtainPairView, AgentDetailsAPIView, CustomerDetai
                      PreferencesDetailView, AgentDataView, UserDeletionView, RegisterView, LoginWithOTP, ValidateOTP,
                        UserDetailView, update_agent_data, AgentRegisterView, AgentUpdateView, ServicesListView, IdtypeListView,
                        PreferencesListView , AdminPermissionView , AdminRegisterView ,
-                     AdminUpdateView, UpdateUserView,AdminListView,UserStatsView,ActionsOnUser, LoginWithContact )
+                     AdminUpdateView, UpdateUserView,AdminListView, AdminDeleteUserView,UserStatsView,ActionsOnUser, LoginWithContact )
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='token_obtain_pair'),
@@ -23,6 +23,7 @@ urlpatterns = [
     path('preferences/', PreferencesListView.as_view(), name='preferences-list'),
     path('idtypes/', IdtypeListView.as_view(), name='idtypes-list'),
     path('delete-user/', UserDeletionView.as_view(), name='delete-user'),
+    path('delete-user/<str:user_id>/', AdminDeleteUserView.as_view(), name='delete-user'),
     path('preferences/<int:id>/', PreferencesDetailView.as_view(), name='preferences-detail'),
     path('agents/', AgentListView.as_view(), name='agent-list'),
     path('customers/', CustomerListView.as_view(), name='customer-list'),

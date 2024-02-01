@@ -83,7 +83,7 @@ class ErrandStatsView(APIView):
 
 class SelectPaymentMethod(APIView):
     def post(self, request, id, *args, **kwargs):
-        payment_mode = request.data.get('payment_method')
+        payment_method = request.data.get('payment_method')
 
         try:
             errand_task = ErrandTask.objects.get(id=id)
@@ -325,6 +325,7 @@ class UserErrandTaskViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]  # Adjust the permission as needed
     #pagination_class = StandardResultsSetPagination  # Enable pagination
 
+
     @action(detail=False, methods=['GET'])
     def agent_errands(self, request):
         # Get errands for the current authenticated agent
@@ -411,7 +412,7 @@ class AdminErrandTaskViewSet(viewsets.ModelViewSet):
 class AdminErrandTaskDeleteAPIView(generics.DestroyAPIView):
     queryset = ErrandTask.objects.all()
     serializer_class = AdminErrandSerializer
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 class SubtypeViewSet(viewsets.ModelViewSet):
     queryset = Subtype.objects.all()

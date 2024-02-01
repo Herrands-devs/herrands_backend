@@ -316,6 +316,18 @@ class UserDeletionView(DestroyAPIView):
         instance.delete()
         return Response({"detail": "Your account has been deleted."}, status=status.HTTP_204_NO_CONTENT)
 
+class AdminDeleteUserView(DestroyAPIView):
+    serializer_class = UserDeletionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        user_id = self.kwargs.get('user_id')  
+        return User.objects.get(id=user_id)
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        return Response({"detail": "User has been deleted."}, status=status.HTTP_204_NO_CONTENT)
+
 '''class ValidateOTP(APIView):
     def post(self, request):
         email = request.data.get('email', '')
@@ -523,6 +535,7 @@ def update_agent_data(request):
 class AgentDetailsAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Agent.objects.all()
     serializer_class = AgentSerializer
+    permission_classes = [IsAuthenticated]
     lookup_field = 'user__id'
 
     def perform_destroy(self, instance):
