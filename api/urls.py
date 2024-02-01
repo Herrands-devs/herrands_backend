@@ -5,7 +5,7 @@ from .views import(CancelErrandsView, PaymentListView,ErrandStatsView, AgentRati
                     CustomerConversationsView, AgentConversationsView, EarningsListView, WalletView,
                     ConversationListAPIView, ErrandTaskViewSet, UserErrandTaskViewSet, UserCompletedErrandTaskViewSet,
                     CreateErrandView, SubtypeViewSet, VehicleMetricViewSet, DistanceMetricViewSet,
-                    WithdrawalHistoryView , AllSubtypesViewSet)
+                    WithdrawalHistoryView , AdminErrandTaskDeleteAPIView, AllSubtypesViewSet)
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
@@ -49,6 +49,7 @@ urlpatterns = [
     path('errand-monthly-state/', ErrandStatsView.as_view(), name='errand_state'),
     path('payment-list/', PaymentListView.as_view(), name='payment_list'),
     path('cancel-errand/<uuid:errand_id>/', CancelErrandsView.as_view(), name='cancel_errand'),
+    path('delete-errand-task/<str:pk>/', AdminErrandTaskDeleteAPIView.as_view(), name='delete-errand-task'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,

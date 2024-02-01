@@ -17,6 +17,7 @@ from accounts.serializers import *
 from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
+from rest_framework.mixins import DestroyModelMixin
 # --------------------------------------------------------------------------------------------
 from django.http import JsonResponse
 import uuid
@@ -82,11 +83,11 @@ class ErrandStatsView(APIView):
 
 class SelectPaymentMethod(APIView):
     def post(self, request, id, *args, **kwargs):
-        payment_mode = request.data.get('payment_mode')
+        payment_mode = request.data.get('payment_method')
 
         try:
             errand_task = ErrandTask.objects.get(id=id)
-            errand_task.payment_mode = payment_mode
+            errand_task.payment_method = payment_method
             errand_task.save()
 
             serializer = ErrandTaskSerializer(errand_task)
@@ -406,6 +407,11 @@ class AdminErrandTaskViewSet(viewsets.ModelViewSet):
     queryset = ErrandTask.objects.all()
     serializer_class = AdminErrandSerializer
     pagination_class = StandardResultsSetPagination
+
+class AdminErrandTaskDeleteAPIView(generics.DestroyAPIView):
+    queryset = ErrandTask.objects.all()
+    serializer_class = AdminErrandSerializer
+    #permission_classes = [IsAuthenticated]
 
 class SubtypeViewSet(viewsets.ModelViewSet):
     queryset = Subtype.objects.all()

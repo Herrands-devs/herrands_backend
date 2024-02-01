@@ -520,10 +520,14 @@ def update_agent_data(request):
         return Response({'error': 'User is not associated with an agent.'}, status=status.HTTP_404_NOT_FOUND)
 
 
-class AgentDetailsAPIView(generics.RetrieveAPIView):
+class AgentDetailsAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Agent.objects.all()
     serializer_class = AgentSerializer
     lookup_field = 'user__id'
+
+    def perform_destroy(self, instance):
+        user = instance.user
+        user.delete()
 
 class CustomerDetailsAPIView(generics.RetrieveAPIView):
     queryset = User.objects.all()
