@@ -114,14 +114,20 @@ class ErrandTaskSerializer(serializers.ModelSerializer):
         return attrs'''
 
     def create(self, validated_data):
+        validated_data_copy = validated_data.copy()
         category_data = validated_data.pop('category')
         subtype_data = validated_data.pop('subtype')
-        validated_data_copy = validated_data.copy()
-        vehicle_type = validated_data_copy.pop('vehicle_type')
+        #vehicle_type = validated_data_copy.pop('vehicle_type')
+        print(category_data)
+        if category_data.id == 1:
+            print('yes')
+        else:
+            print('no')
         # Handle the case where 'files' is not provided or is an empty list
         total_cost = 0
         distance_in_km = 0
-        if category_data == 1:
+        print(category_data)
+        if category_data.id == 1:
             lat_1 = validated_data_copy.pop('pick_up_lat')
             long_1 = validated_data_copy.pop('pick_up_long')
             lat_2 = validated_data_copy.pop('drop_off_lat')
@@ -133,7 +139,7 @@ class ErrandTaskSerializer(serializers.ModelSerializer):
             total_cost = Decimal(str(vehicle_instance.cost)) * Decimal(str(distance_in_km))
             print(total_cost)
         
-        elif subtype_data == 4 or subtype_data ==5:
+        elif subtype_data == 5 or subtype_data ==4:
             how_long = validated_data_copy.pop('how_long')
             time_cap = validated_data_copy.pop('time_cap')
             total_sum = ""
@@ -144,6 +150,7 @@ class ErrandTaskSerializer(serializers.ModelSerializer):
             else:
                 total_sum = (how_long/3600) *2000
             total_cost = total_sum
+            print(total_cost)
             
 
             

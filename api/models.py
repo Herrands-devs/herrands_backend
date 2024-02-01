@@ -31,7 +31,7 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.name
+        return str(self.id)
 
 class Subtype(models.Model):
     name = models.CharField(max_length=100)
@@ -39,7 +39,7 @@ class Subtype(models.Model):
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return str(self.id)
 
 
 
