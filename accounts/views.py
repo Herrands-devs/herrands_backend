@@ -24,9 +24,32 @@ from django.contrib.contenttypes.models import ContentType
 from api.models import ErrandTask, Wallet
 from datetime import datetime, timedelta
 import json
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from .custom_permissions import DeleteUser
 # ------------------------------------------------------------------------------------
 
 User = get_user_model()
+
+class UserPermissionsView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        user = self.request.user
+        permissions = [str(perm) for perm in user.user_permissions.all()]
+        return Response({'permissions': permissions})
+    
+class UserPermissionsByUserIdView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('user_id')
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+
+        permissions = [str(perm) for perm in user.user_permissions.all()]
+        return Response({'permissions': permissions})
 
 class LoginWithContact(APIView):
     def post(self, request):
@@ -318,7 +341,7 @@ class UserDeletionView(DestroyAPIView):
 
 class AdminDeleteUserView(DestroyAPIView):
     serializer_class = UserDeletionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated | (IsAdminUser & DeleteUser)]
 
     def get_object(self):
         user_id = self.kwargs.get('user_id')  

@@ -6,7 +6,7 @@ from .views import (EmailTokenObtainPairView, AgentDetailsAPIView, CustomerDetai
                      PreferencesDetailView, AgentDataView, UserDeletionView, RegisterView, LoginWithOTP, ValidateOTP,
                        UserDetailView, update_agent_data, AgentRegisterView, AgentUpdateView, ServicesListView, IdtypeListView,
                        PreferencesListView , AdminPermissionView , AdminRegisterView ,
-                     AdminUpdateView, UpdateUserView,AdminListView, AdminDeleteUserView,UserStatsView,ActionsOnUser, LoginWithContact )
+                     AdminUpdateView, UserPermissionsView,UpdateUserView,UserPermissionsByUserIdView,AdminListView, AdminDeleteUserView,UserStatsView,ActionsOnUser, LoginWithContact )
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='token_obtain_pair'),
@@ -29,7 +29,7 @@ urlpatterns = [
     path('customers/', CustomerListView.as_view(), name='customer-list'),
     path('agent/<uuid:user__id>/', AgentDetailsAPIView.as_view(), name='agent-details'),
     path('customer/<uuid:id>/', CustomerDetailsAPIView.as_view(), name='customer-details'),
-
+    path('user-permissions/<int:user_id>/', UserPermissionsByUserIdView.as_view(), name='user-permissions-by-id'),
     path('register/admin/',AdminRegisterView.as_view(), name='register-admin'),
     path('update/admin/<uuid:user_id>/', AdminUpdateView.as_view(), name='update-admin'),
     path('manage-admin-permissions/', AdminPermissionView.as_view(), name='manage-admin-perm'),
@@ -37,6 +37,7 @@ urlpatterns = [
     path('admin-list/', AdminListView.as_view(), name='admin_list'),
     path('user-monthly-state/', UserStatsView.as_view(), name='user-state'),
     path('action-on-user/<uuid:user_id>/', ActionsOnUser.as_view(), name='action_on_user'),
+    path('user-permissions/', UserPermissionsView.as_view(), name='user-permissions'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
