@@ -571,3 +571,64 @@ class CustomerDetailsAPIView(generics.RetrieveAPIView):
     lookup_field = 'id'
 # ----------------------------------------------------------
     
+class UpdateUserPermissionsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, user_id, *args, **kwargs):
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserPermissionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        permissions_to_update = [
+            'delete_user', 'suspend_user', 'delete_errands',
+            'cancel_errands', 'cancel_payout', 'delete_payout',
+            'manage_support', 'add_new_admin',
+        ]
+
+        for permission_name in permissions_to_update:
+            permission_codename = f'accounts.{permission_name}'
+            value = serializer.validated_data.get(permission_name, False)
+
+            try:
+                permission = Permission.objects.get(codename=permission_codename)
+
+                if value and permission not in user.user_permissions.all():
+                    user.user_permissions.add(permission)
+                elif not value and permission in user.user_permissions.all():
+                    user.user_permissions.remove(permission)
+
+            except Permission.DoesNotExist:
+                # Handle the case where the permission doesn't exist if needed
+                pass
+
+        return Response(status=status.HTTP_200_OK)
+    
+class RemoveUserPermissionsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        serializer = RemoveUserPermissionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user_id = serializer.validated_data['user_id']
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        permissions_to_remove = serializer.validated_data['permissions_to_remove']
+
+        for permission_codename in permissions_to_remove:
+            try:
+                permission = Permission.objects.get(codename=permission_codename)
+                user.user_permissions.remove(permission)
+            except Permission.DoesNotExist:
+                # Handle the case where the permission doesn't exist if needed
+                pass
+
+        return Response(status=status.HTTP_200_OK)

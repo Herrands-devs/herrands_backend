@@ -269,3 +269,18 @@ class UserLocationUpdateSerializer(serializers.Serializer):
         instance.current_long = validated_data.get('current_long', instance.current_long)
         instance.save()
         return instance
+
+
+class UserPermissionSerializer(serializers.Serializer):
+    delete_user = serializers.BooleanField(required=False)
+    suspend_user = serializers.BooleanField(required=False)
+    delete_errands = serializers.BooleanField(required=False)
+    cancel_errands = serializers.BooleanField(required=False)
+    cancel_payout = serializers.BooleanField(required=False)
+    delete_payout = serializers.BooleanField(required=False)
+    manage_support = serializers.BooleanField(required=False)
+    add_new_admin = serializers.BooleanField(required=False)
+
+class RemoveUserPermissionSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    permissions_to_remove = serializers.ListField(child=serializers.CharField())

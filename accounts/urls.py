@@ -6,7 +6,7 @@ from .views import (EmailTokenObtainPairView, AgentDetailsAPIView, CustomerDetai
                      PreferencesDetailView, AgentDataView, UserDeletionView, RegisterView, LoginWithOTP, ValidateOTP,
                        UserDetailView, update_agent_data, AgentRegisterView, AgentUpdateView, ServicesListView, IdtypeListView,
                        PreferencesListView , AdminPermissionView , AdminRegisterView ,
-                     AdminUpdateView, UserPermissionsView,UpdateUserView,UserPermissionsByUserIdView,AdminListView, AdminDeleteUserView,UserStatsView,ActionsOnUser, LoginWithContact )
+                     AdminUpdateView, UserPermissionsView,UpdateUserView,UserPermissionsByUserIdView,AdminListView,RemoveUserPermissionsView,UpdateUserPermissionsView, AdminDeleteUserView,UserStatsView,ActionsOnUser, LoginWithContact )
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='token_obtain_pair'),
@@ -38,6 +38,8 @@ urlpatterns = [
     path('user-monthly-state/', UserStatsView.as_view(), name='user-state'),
     path('action-on-user/<uuid:user_id>/', ActionsOnUser.as_view(), name='action_on_user'),
     path('user-permissions/', UserPermissionsView.as_view(), name='user-permissions'),
+    path('update_permissions/<uuid:user_id>/', UpdateUserPermissionsView.as_view(), name='update_permissions'),
+    path('remove_permissions/', RemoveUserPermissionsView.as_view(), name='remove_permissions'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
