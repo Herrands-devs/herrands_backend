@@ -282,5 +282,5 @@ class UserPermissionSerializer(serializers.Serializer):
     add_new_admin = serializers.BooleanField(required=False)
 
 class RemoveUserPermissionSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField()
+    user_id = serializers.CharField()
     permissions_to_remove = serializers.ListField(child=serializers.CharField())
