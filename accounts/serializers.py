@@ -270,6 +270,9 @@ class UserLocationUpdateSerializer(serializers.Serializer):
         instance.save()
         return instance
 
+class AddPermissionSerializer(serializers.Serializer):
+    user_id = serializers.CharField()
+    permission = serializers.CharField()
 
 class UserPermissionSerializer(serializers.Serializer):
     delete_user = serializers.BooleanField(required=False)
