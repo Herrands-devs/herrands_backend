@@ -5,8 +5,8 @@ from django.conf.urls.static import static
 from .views import (EmailTokenObtainPairView, AgentDetailsAPIView, CustomerDetailsAPIView, AgentListView, CustomerListView,
                      PreferencesDetailView, AgentDataView, UserDeletionView, RegisterView, LoginWithOTP, ValidateOTP,
                        UserDetailView, update_agent_data, AgentRegisterView, AgentUpdateView, ServicesListView, IdtypeListView,
-                       PreferencesListView , AdminPermissionView , AdminRegisterView ,
-                     AdminUpdateView, UserPermissionsView,UpdateUserView,UserPermissionsByUserIdView,AdminListView,RemoveUserPermissionsView,UpdateUserPermissionsView, AdminDeleteUserView,UserStatsView,ActionsOnUser, LoginWithContact )
+                       PreferencesListView , AdminPermissionView , AdminRegisterView , UpdateUserPermissionsView,
+                     AdminUpdateView, UserPermissionsView,UpdateUserView,UserPermissionsByUserIdView,UserPermissionsByUserIdView,AdminListView,RemoveUserPermissionsView,UpdateUserPermissionsView, AdminDeleteUserView,UserStatsView,ActionsOnUser, LoginWithContact )
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='token_obtain_pair'),

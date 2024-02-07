@@ -67,6 +67,11 @@ class IdtypeSerializer(serializers.ModelSerializer):
 class TokenObtainPairSerializer(JwtTokenObtainPairSerializer):
     username_field = get_user_model().USERNAME_FIELD
 
+class UpdateUserPermissionsSerializer(serializers.Serializer):
+    delete_user = serializers.BooleanField(required=False)
+    suspend_user = serializers.BooleanField(required=False)
+    delete_errands = serializers.BooleanField(required=False)
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

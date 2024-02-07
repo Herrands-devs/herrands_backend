@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import DestroyAPIView, UpdateAPIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import *
-from rest_framework import status, generics
+from rest_framework import status, generics, permissions
 from .utils import generate_otp, send_otp_email, send_otp_phone , send_account_creation_mail
 from .models import User
 from django.contrib.auth import authenticate
@@ -25,7 +25,7 @@ from api.models import ErrandTask, Wallet
 from datetime import datetime, timedelta
 import json
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from .custom_permissions import DeleteUser
+from .custom_permissions import DeleteUser, DeleteErrands, SuspendUser
 # ------------------------------------------------------------------------------------
 
 User = get_user_model()
@@ -35,10 +35,31 @@ class UserPermissionsView(generics.RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         user = self.request.user
-        permissions = [str(perm) for perm in user.user_permissions.all()]
-        return Response({'permissions': permissions})
+        specific_permissions = [
+            "suspend_user",
+            "delete_user",
+            "delete_errands",
+            "cancel_errands",
+            "cancel_payout",
+            "delete_payout",
+            "manage_support",
+            "add_new_admin",
+        ]
+
+        user_permissions = {str(perm).split('.')[-1].strip() for perm in user.user_permissions.all()}
+
+        all_perm = [{'title': perm, 'status': perm in user_permissions} for perm in specific_permissions]
+
+        return Response({'permissions': all_perm})
+
+       
+
+        
+        return Response({'permissions': all_perm})
+
+
     
-class UserPermissionsByUserIdView(generics.RetrieveAPIView):
+'''class UserPermissionsByUserIdView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def retrieve(self, request, *args, **kwargs):
@@ -48,8 +69,100 @@ class UserPermissionsByUserIdView(generics.RetrieveAPIView):
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=404)
 
-        permissions = [str(perm) for perm in user.user_permissions.all()]
-        return Response({'permissions': permissions})
+        # Define a list of specific permission titles
+        specific_permissions = [
+            "suspend_user",
+            "delete_user",
+            "delete_errands",
+            "cancel_errands",
+            "cancel_payout",
+            "delete_payout",
+            "manage_support",
+            "add_new_admin",
+        ]
+
+        # Fetch user's permissions
+        user_permissions = user.user_permissions.values_list('codename', flat=True)
+
+        # Create a list of dictionaries with title and status
+        permissions = [
+            {
+                'title': title,
+                'status': title in user_permissions
+            }
+            for title in specific_permissions
+        ]
+
+        return Response({'permissions': permissions})'''
+
+class UserPermissionsByUserIdView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('user_id')
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+        specific_permissions = [
+            "suspend_user",
+            "delete_user",
+            "delete_errands",
+            "cancel_errands",
+            "cancel_payout",
+            "delete_payout",
+            "manage_support",
+            "add_new_admin",
+        ]
+
+        user_permissions = {str(perm).split('.')[-1].strip() for perm in user.user_permissions.all()}
+
+        all_perm = [{'title': perm, 'status': perm in user_permissions} for perm in specific_permissions]
+
+        return Response({'permissions': all_perm})
+    
+class UpdateUserPermissionsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, user_id, *args, **kwargs):
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserPermissionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        permissions_to_update = [
+            'delete_user', 'suspend_user', 'delete_errands',
+            'cancel_errands', 'cancel_payout', 'delete_payout',
+            'manage_support', 'add_new_admin',
+        ]
+
+        for permission_name in permissions_to_update:
+            permission_codename = f'accounts.{permission_name}'
+            value = serializer.validated_data.get(permission_name, False)
+
+            try:
+                permission = Permission.objects.get(codename=permission_codename)
+
+                if value and permission not in user.user_permissions.all():
+                    user.user_permissions.add(permission)
+                elif not value and permission in user.user_permissions.all():
+                    user.user_permissions.remove(permission)
+
+            except Permission.DoesNotExist:
+                # Handle the case where the permission doesn't exist if needed
+                pass
+
+        return Response(status=status.HTTP_200_OK)
+
+
+
+
+class PermissionSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    status = serializers.BooleanField()
 
 class LoginWithContact(APIView):
     def post(self, request):
@@ -94,6 +207,82 @@ class ActionsOnUser(APIView):
 
         except Exception as e:
             return Response({'detail': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+class PermissionUpdateSerializer(serializers.Serializer):
+    permissions = serializers.ListField(child=serializers.CharField())
+
+class PermissionUpdateView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = PermissionUpdateSerializer
+    permission_classes = [permissions.IsAdminUser]
+    lookup_field = 'user_id'  # Change to the actual lookup field you are using
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Get the list of permissions from the request data
+        permissions_to_add = serializer.validated_data.get('permissions', [])
+
+        # Add permissions to the user
+        user_permissions = Permission.objects.filter(codename__in=permissions_to_add)
+        instance.user_permissions.add(*user_permissions)
+
+        return Response({'message': 'Permissions added successfully'}) 
+
+class PermissionSerializer(serializers.Serializer):
+    delete_user = serializers.BooleanField(required=False)
+    suspend_user = serializers.BooleanField(required=False)
+    delete_errands = serializers.BooleanField(required=False)
+    cancel_errands = serializers.BooleanField(required=False)
+    cancel_payout = serializers.BooleanField(required=False)
+    delete_payout = serializers.BooleanField(required=False)
+    manage_support = serializers.BooleanField(required=False)
+    add_new_admin = serializers.BooleanField(required=False)
+
+    def update(self, instance, validated_data):
+        # Loop through the validated_data and update the corresponding fields in the instance
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        # Save the instance to persist the changes
+        instance.save()
+
+        return instance
+
+
+    
+class UpdateUserPermissionsView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UpdateUserPermissionsSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        # Update user permissions based on the provided data
+        user = instance
+        if serializer.validated_data.get('delete_user'):
+            user.user_permissions.add(DeleteUser.get_permission())
+        else:
+            user.user_permissions.remove(DeleteUser.get_permission())
+
+        if serializer.validated_data.get('suspend_user'):
+            user.user_permissions.add(SuspendUser.get_permission())
+        else:
+            user.user_permissions.remove(SuspendUser.get_permission())
+
+        if serializer.validated_data.get('delete_errands'):
+            user.user_permissions.add(DeleteErrands.get_permission())
+        else:
+            user.user_permissions.remove(DeleteErrands.get_permission())
+
+        user.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserStatsView(APIView):
     permission_classes = [IsAuthenticated]
