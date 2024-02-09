@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Subtype, File, ErrandTask, Conversation, Message, Earnings, Wallet
+from .models import Category, Subtype, File, ErrandTask, Conversation, Message, Earnings, Wallet, Payment
 
 # Define custom admin classes if needed
 
@@ -18,6 +18,12 @@ class SubtypeAdmin(admin.ModelAdmin):
 class FileAdmin(admin.ModelAdmin):
     list_display = ['file']
     search_fields = ['file']
+@admin.register(Payment)
+class FileAdmin(admin.ModelAdmin):
+    list_display = ['reference_id', 'transaction_id', 'errands' ]
+    search_fields = ['reference_id', 'transaction_id', 'errands' ]
+
+
 
 @admin.register(ErrandTask)
 class ErrandTaskAdmin(admin.ModelAdmin):

@@ -234,7 +234,10 @@ class Payment(models.Model):
         (FAILED,"Failed"),
     )
     payment_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    errands = models.ForeignKey(ErrandTask,on_delete=models.SET_NULL, null=True, blank=True)
+    errands = models.ForeignKey(ErrandTask,
+        on_delete=models.CASCADE, 
+        null=True,
+        blank=True)
     payment_status = models.CharField(max_length=100, choices=PAYMENT_STATUSES , default = PENDING)
     reference_id = models.CharField(max_length=200, blank=True , null=True)
     transaction_id = models.CharField(max_length=200,  blank=True, null=True)
